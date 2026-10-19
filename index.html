@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>נתיב האור · מסע בין הצ'אקרות</title>
+<meta name="description" content="נתיב האור: מסע תלת-ממדי להיכרות עם הצ'אקרות, עם מסלול מותאם לנושא שאתם חוקרים, שאלות מובילות ויצירת מסע אנרגטי אישי.">
+<meta property="og:title" content="נתיב האור · מסע בין הצ'אקרות">
+<meta property="og:description" content="חקרו את המרכזים האנרגטיים, בנו מסע מותאם לנושא שלכם, ושמרו או שתפו אותו.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a0b14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0b14'/%3E%3Ccircle cx='32' cy='12' r='6' fill='%239678d6'/%3E%3Ccircle cx='32' cy='26' r='6' fill='%233e93ac'/%3E%3Ccircle cx='32' cy='40' r='6' fill='%234f9d74'/%3E%3Ccircle cx='32' cy='54' r='6' fill='%23b2394a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0b14;
+    --void-2:#14162a;
+    --void-3:#1c1f38;
+    --ink:#ece9f5;
+    --ink-dim:#a29cc0;
+    --ink-faint:#635e82;
+    --gold:#e8c77a;
+    --gold-dim:#8a7548;
+    --line:rgba(236,233,245,.09);
+    --line-2:rgba(236,233,245,.16);
+    --serif:'Frank Ruhl Libre', serif;
+    --sans:'Heebo', sans-serif;
+    --shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%; background:var(--void); color:var(--ink); font-family:var(--sans); overflow:hidden; overscroll-behavior:none;}
+  #canvasWrap{position:fixed; inset:0;}
+  canvas#stage{display:block; width:100%; height:100%; touch-action:none;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:fixed; top:0; right:0; left:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: max(16px, env(safe-area-inset-top)) 18px 0 18px;
+    pointer-events:none;
+  }
+  .brand{display:flex; flex-direction:column; gap:2px; pointer-events:none;}
+  .brand .title{font-family:var(--serif); font-size:17px; font-weight:600; letter-spacing:.3px; color:var(--ink);}
+  .brand .sub{font-size:11px; color:var(--ink-faint); letter-spacing:.5px;}
+  .iconbtn{
+    pointer-events:auto;
+    height:38px; border-radius:999px; padding:0 16px;
+    background:rgba(20,22,42,.6); border:1px solid var(--line-2);
+    color:var(--ink-dim); display:flex; align-items:center; gap:7px; justify-content:center;
+    backdrop-filter: blur(6px);
+    cursor:pointer; font-size:12.5px; font-family:var(--sans); font-weight:500; transition:.2s;
+  }
+  .iconbtn .ico{font-size:14px;}
+  .iconbtn:hover{color:var(--ink); border-color:var(--gold-dim);}
+  .iconbtn:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+
+  /* ---------- side legend ---------- */
+  .legend{
+    position:fixed; top:50%; left:12px; transform:translateY(-50%);
+    z-index:25; display:flex; flex-direction:column; gap:7px;
+    pointer-events:none;
+  }
+  .legend-item{
+    pointer-events:auto; display:flex; align-items:center; gap:8px;
+    background:rgba(10,11,20,.45); border:1px solid transparent; border-radius:999px;
+    padding:5px 12px 5px 6px; cursor:pointer; transition:.25s;
+    font-size:11.5px; color:var(--ink-faint); letter-spacing:.2px; white-space:nowrap;
+  }
+  .legend-item .d{width:8px; height:8px; border-radius:50%; flex:none; background:var(--dot); box-shadow:0 0 0 0 var(--dot); transition:.25s;}
+  .legend-item:hover{color:var(--ink); border-color:var(--line-2);}
+  .legend-item.active{color:var(--ink); border-color:var(--dot); background:rgba(20,22,42,.7);}
+  .legend-item.active .d{box-shadow:0 0 10px 2px var(--dot);}
+  .legend-item.picked{color:var(--ink);}
+  .legend-item.picked .d{box-shadow:0 0 8px 1px var(--dot);}
+  @media (max-width:560px){
+    .legend{left:6px; gap:5px;}
+    .legend-item{padding:4px 9px 4px 5px; font-size:10.5px;}
+    .legend-item span.txt{display:none;}
+    .legend-item.active span.txt, .legend-item.picked span.txt{display:inline;}
+  }
+
+  /* ---------- hint ---------- */
+  .hint{
+    position:fixed; left:50%; bottom:96px; transform:translateX(-50%);
+    font-size:12.5px; color:var(--ink-faint); letter-spacing:.3px;
+    background:rgba(10,11,20,.5); border:1px solid var(--line); border-radius:999px;
+    padding:8px 16px; pointer-events:none; z-index:30; white-space:nowrap;
+    transition:opacity .6s ease;
+  }
+  .hint.hidden{opacity:0;}
+
+  /* ---------- intro overlay ---------- */
+  .intro{
+    position:fixed; inset:0; z-index:100; background:radial-gradient(circle at 50% 30%, #171a30 0%, #0a0b14 70%);
+    display:flex; align-items:center; justify-content:center; padding:28px;
+    transition: opacity .7s ease, visibility .7s;
+  }
+  .intro.hidden{opacity:0; visibility:hidden; pointer-events:none;}
+  .intro-card{max-width:440px; text-align:center;}
+  .intro-eyebrow{font-size:11px; letter-spacing:3px; color:var(--gold-dim); text-transform:uppercase; margin-bottom:14px;}
+  .intro-card h1{font-family:var(--serif); font-size:34px; font-weight:600; margin:0 0 14px; line-height:1.25; color:var(--ink);}
+  .intro-card p{font-size:14.5px; line-height:1.9; color:var(--ink-dim); margin:0 0 10px;}
+  .intro-steps{margin:26px 0; text-align:right; display:flex; flex-direction:column; gap:12px;}
+  .intro-step{display:flex; align-items:flex-start; gap:12px; font-size:13.5px; color:var(--ink-dim); line-height:1.6;}
+  .intro-step .dot{flex:none; width:6px; height:6px; border-radius:50%; background:var(--gold); margin-top:7px;}
+  .controls-legend{
+    margin:4px 0 26px; padding:14px 16px; background:var(--void-2); border:1px solid var(--line);
+    border-radius:14px; text-align:right;
+  }
+  .controls-title{font-size:11px; letter-spacing:1.5px; color:var(--gold-dim); text-transform:uppercase; margin-bottom:10px;}
+  .controls-grid{display:flex; flex-direction:column; gap:8px;}
+  .ctrl{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--ink-dim); line-height:1.5;}
+  .ctrl .ci{flex:none; width:24px; height:24px; border-radius:50%; background:var(--void-3); border:1px solid var(--line-2); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--gold);}
+  .btn-primary{
+    font-family:var(--sans); font-weight:600; font-size:14.5px; letter-spacing:.3px;
+    background:linear-gradient(135deg, var(--gold), #cf9f52); color:#20160a;
+    border:none; border-radius:999px; padding:14px 34px; cursor:pointer;
+    box-shadow: 0 8px 24px rgba(232,199,122,.18);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:0 12px 30px rgba(232,199,122,.28);}
+  .btn-primary:focus-visible{outline:2px solid #fff; outline-offset:3px;}
+
+  /* ---------- chakra sheet (bottom card) ---------- */
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:60;
+    background:linear-gradient(180deg, var(--void-2), var(--void));
+    border-top:1px solid var(--line-2);
+    border-radius:22px 22px 0 0;
+    box-shadow:var(--shadow);
+    padding: 18px 20px calc(20px + env(safe-area-inset-bottom));
+    max-height:72vh; overflow-y:auto;
+    transform:translateY(105%); transition: transform .45s cubic-bezier(.16,.9,.2,1);
+  }
+  .sheet.open{transform:translateY(0);}
+  .sheet-handle{width:36px; height:4px; border-radius:2px; background:var(--line-2); margin:0 auto 14px;}
+  .sheet-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px;}
+  .sheet-title-wrap{display:flex; align-items:center; gap:12px;}
+  .sheet-dot{width:16px; height:16px; border-radius:50%; flex:none; box-shadow:0 0 18px 2px var(--dot-glow, transparent);}
+  .sheet-title{font-family:var(--serif); font-size:22px; font-weight:600; color:var(--ink);}
+  .sheet-sanskrit{font-size:12px; color:var(--ink-faint); letter-spacing:.5px; margin-right:2px;}
+  .sheet-loc{font-size:12px; color:var(--ink-faint); margin-top:2px;}
+  .sheet-close{background:none; border:none; color:var(--ink-faint); font-size:22px; cursor:pointer; padding:4px 8px; line-height:1;}
+  .sheet-close:focus-visible{outline:2px solid var(--gold); border-radius:6px;}
+  .sheet-desc{font-size:13.5px; line-height:1.8; color:var(--ink-dim); margin:14px 0 16px; border-right:2px solid var(--line-2); padding-right:12px;}
+  .bonus-flag{display:inline-block; font-size:10.5px; letter-spacing:.5px; color:var(--gold); border:1px solid var(--gold-dim); border-radius:999px; padding:2px 10px; margin-bottom:10px;}
+  .qgrid{display:flex; flex-wrap:wrap; gap:9px; margin-top:4px;}
+  .qchip{
+    font-family:var(--sans); font-size:13px; color:var(--ink);
+    background:var(--void-3); border:1px solid var(--line-2); border-radius:12px;
+    padding:10px 14px; cursor:pointer; text-align:right; line-height:1.5;
+    transition:.18s; display:flex; flex-direction:column; gap:3px; flex:1 1 150px; min-width:140px;
+  }
+  .qchip .qname{font-weight:600;}
+  .qchip .qdesc{font-size:11px; color:var(--ink-faint); font-weight:400; line-height:1.5;}
+  .qchip:hover{border-color:var(--chip-color, var(--gold-dim)); transform:translateY(-1px);}
+  .qchip:focus-visible{outline:2px solid var(--gold); outline-offset:1px;}
+  .qchip.selected{background:color-mix(in srgb, var(--chip-color) 20%, var(--void-3)); border-color:var(--chip-color);}
+  .qchip.selected .qname::before{content:"✓ "; color:var(--chip-color);}
+
+  /* ---------- sheet: role / topic / practice / guide ---------- */
+  .sheet{max-height:62vh; padding-bottom:0; max-width:760px; margin-left:auto; margin-right:auto;}
+  .sheet::after{content:""; display:block; height:calc(18px + env(safe-area-inset-bottom));}
+  .sheet-label{font-size:10.5px; letter-spacing:1.4px; color:var(--gold-dim); text-transform:uppercase; margin:14px 0 6px;}
+  .sheet-desc{margin:0 0 8px;}
+  .sheet-bal{font-size:12.5px; color:var(--ink-faint); line-height:1.7; margin:0 0 4px;}
+  .sheet-bal b{color:var(--ink-dim); font-weight:500;}
+  .sheet-topic{
+    margin:14px 0 8px; padding:12px 14px; border-radius:14px;
+    background:color-mix(in srgb, var(--topic-color, var(--gold)) 11%, var(--void-2));
+    border:1px solid color-mix(in srgb, var(--topic-color, var(--gold)) 38%, transparent);
+  }
+  .sheet-topic .sheet-label{margin-top:0; color:var(--topic-color, var(--gold));}
+  .sheet-topic[hidden]{display:none;}
+  .sheet-why{font-size:13px; line-height:1.7; color:var(--ink);}
+  .sheet-q{margin-top:8px; font-family:var(--serif); font-size:15px; line-height:1.6; color:var(--ink);}
+  .sheet-q::before{content:"שאלה מובילה · "; font-family:var(--sans); font-size:10.5px; letter-spacing:.8px; color:var(--ink-faint);}
+  .sheet-practice{margin:10px 0 2px; border:1px solid var(--line); border-radius:12px; background:var(--void-2);}
+  .sheet-practice summary{cursor:pointer; padding:10px 14px; font-size:12.5px; color:var(--ink-dim); list-style:none;}
+  .sheet-practice summary::-webkit-details-marker{display:none;}
+  .sheet-practice summary::before{content:"＋ "; color:var(--gold);}
+  .sheet-practice[open] summary::before{content:"－ ";}
+  .practice-body{padding:0 14px 12px; font-size:13px; line-height:1.8; color:var(--ink-dim);}
+  .practice-body ol{margin:6px 0 0; padding-right:18px;}
+  .practice-body li{margin-bottom:3px;}
+
+  .guide-nav{
+    position:sticky; bottom:0; margin:16px -20px 0; padding:12px 20px 12px;
+    background:linear-gradient(0deg, var(--void) 78%, transparent);
+    display:none;
+  }
+  .guide-nav.on{display:block;}
+  .gn-progress{display:flex; align-items:center; gap:6px; margin-bottom:10px;}
+  .gn-dot{flex:1; height:4px; border-radius:2px; background:var(--line-2); transition:.3s;}
+  .gn-dot.done{background:var(--gold-dim);}
+  .gn-dot.now{background:var(--gold);}
+  .gn-row{display:flex; align-items:center; gap:10px;}
+  .gn-count{font-size:11.5px; color:var(--ink-faint); flex:1;}
+  .gn-exit{background:none; border:none; color:var(--ink-faint); font-family:var(--sans); font-size:12px; cursor:pointer; padding:6px 4px;}
+
+  /* ---------- topic chip, guide cta ---------- */
+  .topic-chip{
+    position:fixed; top:62px; left:50%; transform:translateX(-50%); z-index:35;
+    display:flex; align-items:center; gap:8px; max-width:calc(100vw - 150px);
+    background:rgba(20,22,42,.78); backdrop-filter:blur(8px);
+    border:1px solid var(--gold-dim); border-radius:999px; padding:7px 14px;
+    font-family:var(--sans); font-size:12.5px; color:var(--ink); cursor:pointer;
+  }
+  .topic-chip[hidden], .guide-cta[hidden]{display:none;}
+  .topic-chip .tc-label{color:var(--gold-dim); font-size:10.5px; letter-spacing:.8px; flex:none;}
+  .topic-chip .tc-text{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;}
+  .topic-chip .tc-edit{color:var(--ink-faint); flex:none;}
+  .guide-cta{
+    position:fixed; left:50%; bottom:64px; transform:translateX(-50%); z-index:45;
+    font-family:var(--sans); font-weight:600; font-size:13.5px; letter-spacing:.2px; white-space:nowrap;
+    background:linear-gradient(135deg, var(--gold), #cf9f52); color:#20160a;
+    border:none; border-radius:999px; padding:12px 24px; cursor:pointer;
+    box-shadow:0 10px 30px rgba(232,199,122,.25);
+    animation:ctaPulse 2.8s ease-in-out infinite;
+  }
+  .guide-cta.hide{opacity:0; pointer-events:none;}
+  @keyframes ctaPulse{0%,100%{box-shadow:0 10px 30px rgba(232,199,122,.22);}50%{box-shadow:0 10px 38px rgba(232,199,122,.5);}}
+  .hint{bottom:118px;}
+
+  /* legend recommended marker */
+  .legend-item .num{display:none; flex:none; width:15px; height:15px; border-radius:50%; background:var(--gold); color:#20160a; font-size:9.5px; font-weight:700; align-items:center; justify-content:center;}
+  .legend-item.rec .num{display:flex;}
+  .legend-item.dim{opacity:.55;}
+  .legend-item.dim:hover, .legend-item.dim.active{opacity:1;}
+
+  /* ---------- topic screen ---------- */
+  .topic-screen{
+    position:fixed; inset:0; z-index:95; overflow-y:auto;
+    background:radial-gradient(circle at 50% 20%, #171a30 0%, #0a0b14 72%);
+    display:flex; align-items:flex-start; justify-content:center; padding:28px 20px 40px;
+    transition:opacity .5s ease, visibility .5s;
+  }
+  .topic-screen.hidden{opacity:0; visibility:hidden; pointer-events:none;}
+  .topic-card{max-width:520px; width:100%; margin:auto 0; text-align:right;}
+  .topic-card h2{font-family:var(--serif); font-size:26px; line-height:1.35; font-weight:600; margin:6px 0 10px;}
+  .topic-sub{font-size:13.5px; line-height:1.85; color:var(--ink-dim); margin:0 0 16px;}
+  #topicInput{
+    width:100%; background:var(--void-2); border:1px solid var(--line-2); border-radius:14px;
+    color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.6; padding:14px 16px; resize:none;
+  }
+  #topicInput:focus{outline:none; border-color:var(--gold-dim);}
+  #topicInput::placeholder{color:var(--ink-faint);}
+  .topic-match{min-height:22px; margin:8px 2px 4px; font-size:12px; color:var(--gold); line-height:1.6;}
+  .topic-chips{display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 20px;}
+  .tchip{
+    font-family:var(--sans); font-size:12.5px; color:var(--ink-dim); background:var(--void-2);
+    border:1px solid var(--line-2); border-radius:999px; padding:8px 14px; cursor:pointer; transition:.18s;
+  }
+  .tchip:hover{color:var(--ink); border-color:var(--gold-dim);}
+  .tchip.on{color:#20160a; background:var(--gold); border-color:var(--gold); font-weight:600;}
+  .topic-actions{display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
+  .btn-link{background:none; border:none; color:var(--ink-dim); font-family:var(--sans); font-size:13px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:6px 2px;}
+  .topic-note{margin-top:22px; font-size:11.5px; color:var(--ink-faint); line-height:1.7;}
+
+  /* ---------- reflect: topic header, order, lens ---------- */
+  .reflect-topic{background:var(--void-2); border:1px solid var(--gold-dim); border-radius:14px; padding:12px 16px; margin-bottom:14px; font-size:13px; color:var(--ink-dim); line-height:1.7;}
+  .reflect-topic b{color:var(--ink); font-family:var(--serif); font-size:16px; font-weight:600; display:block;}
+  .order-row{display:flex; align-items:center; gap:10px; margin:0 0 18px; font-size:12.5px; color:var(--ink-faint);}
+  .order-row select{flex:1; background:var(--void-2); border:1px solid var(--line-2); border-radius:10px; color:var(--ink); font-family:var(--sans); font-size:13px; padding:9px 10px;}
+  .reflect-lens{font-size:12.5px; line-height:1.7; color:var(--ink-faint); margin:-4px 0 10px; border-right:2px solid var(--line-2); padding-right:10px;}
+
+  /* ---------- journey card additions ---------- */
+  .jc-topic{text-align:center; font-size:13px; color:var(--ink-dim); margin:-12px 0 20px; line-height:1.7;}
+  .jc-topic b{display:block; font-family:var(--serif); font-size:17px; color:var(--ink); font-weight:600;}
+  .jc-lens{font-size:12px; color:var(--ink-faint); line-height:1.7; margin:0 0 6px;}
+  .jc-practice{margin-top:22px; padding-top:18px; border-top:1px solid var(--line-2);}
+  .jc-practice-title{font-size:10.5px; letter-spacing:2px; color:var(--gold-dim); text-transform:uppercase; margin-bottom:8px; text-align:center;}
+  .jc-practice ol{margin:0; padding-right:20px; font-size:12.5px; color:var(--ink-dim); line-height:1.85;}
+
+  /* ---------- journey dock ---------- */
+  .dock{
+    position:fixed; left:0; right:0; bottom:0; z-index:50;
+    display:flex; flex-direction:column; align-items:center;
+    pointer-events:none;
+  }
+  .dock-tab{
+    pointer-events:auto;
+    display:flex; align-items:center; gap:10px;
+    background:rgba(20,22,42,.85); backdrop-filter:blur(8px);
+    border:1px solid var(--line-2); border-bottom:none;
+    border-radius:16px 16px 0 0;
+    padding:10px 18px; margin-bottom:0;
+    cursor:pointer; font-size:13px; color:var(--ink-dim);
+    transform:translateY(0); transition:.2s;
+  }
+  .dock-tab .count{background:var(--gold); color:#20160a; font-weight:700; font-size:11.5px; border-radius:999px; padding:1px 8px;}
+  .dock-strip{
+    pointer-events:auto; width:100%;
+    background:rgba(15,16,30,.92); backdrop-filter:blur(10px);
+    border-top:1px solid var(--line-2);
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    display:flex; flex-direction:column; gap:12px;
+    max-height:0; overflow:hidden; transition: max-height .4s ease;
+  }
+  .dock-strip.open{max-height:220px; overflow-y:auto;}
+  .dock-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:2px;}
+  .dock-chip{
+    flex:none; display:flex; align-items:center; gap:8px;
+    background:var(--void-3); border:1px solid var(--line-2); border-radius:999px;
+    padding:7px 8px 7px 12px; font-size:12px; white-space:nowrap; color:var(--ink);
+  }
+  .dock-chip .d{width:9px; height:9px; border-radius:50%; flex:none;}
+  .dock-chip button{background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:14px; padding:2px;}
+  .dock-actions{display:flex; gap:10px; justify-content:space-between; align-items:center;}
+  .dock-hint{font-size:11.5px; color:var(--ink-faint);}
+  .btn-small{
+    font-family:var(--sans); font-size:12.5px; font-weight:600; letter-spacing:.2px;
+    background:linear-gradient(135deg, var(--gold), #cf9f52); color:#20160a;
+    border:none; border-radius:999px; padding:10px 20px; cursor:pointer; white-space:nowrap;
+  }
+  .btn-small:focus-visible{outline:2px solid #fff; outline-offset:2px;}
+  .btn-ghost{
+    font-family:var(--sans); font-size:12.5px; font-weight:500;
+    background:transparent; color:var(--ink-dim); border:1px solid var(--line-2); border-radius:999px;
+    padding:9px 16px; cursor:pointer; white-space:nowrap;
+  }
+
+
+  /* ---------- full screens (reflect / journey) ---------- */
+  .screen{
+    position:fixed; inset:0; z-index:80; background:var(--void);
+    display:flex; flex-direction:column;
+    transform:translateY(100%); transition: transform .5s cubic-bezier(.16,.9,.2,1);
+    overflow-y:auto;
+  }
+  .screen.open{transform:translateY(0);}
+  .screen-head{
+    position:sticky; top:0; z-index:5; background:linear-gradient(180deg, var(--void) 70%, transparent);
+    display:flex; align-items:center; justify-content:space-between;
+    padding: max(18px, env(safe-area-inset-top)) 20px 14px;
+  }
+  .screen-head .back{background:none; border:none; color:var(--ink-dim); font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px;}
+  .screen-head h2{font-family:var(--serif); font-size:19px; font-weight:600; margin:0; color:var(--ink);}
+  .screen-body{padding:6px 20px 40px; max-width:640px; margin:0 auto; width:100%;}
+  .screen-intro{font-size:13.5px; color:var(--ink-dim); line-height:1.8; margin-bottom:24px;}
+
+  .reflect-card{
+    background:var(--void-2); border:1px solid var(--line); border-radius:16px;
+    padding:18px; margin-bottom:14px;
+  }
+  .reflect-head{display:flex; align-items:center; gap:10px; margin-bottom:4px;}
+  .reflect-dot{width:11px; height:11px; border-radius:50%; flex:none;}
+  .reflect-chakra{font-size:11.5px; color:var(--ink-faint); letter-spacing:.3px;}
+  .reflect-quality{font-family:var(--serif); font-size:18px; font-weight:600; color:var(--ink); margin:2px 0 12px;}
+  .reflect-input{
+    width:100%; background:var(--void-3); border:1px solid var(--line-2); border-radius:10px;
+    color:var(--ink); font-family:var(--sans); font-size:13.5px; line-height:1.6;
+    padding:12px 14px; resize:vertical; min-height:56px;
+  }
+  .reflect-input:focus{outline:none; border-color:var(--gold-dim);}
+  .reflect-input::placeholder{color:var(--ink-faint);}
+
+  .screen-footer{
+    position:sticky; bottom:0; background:linear-gradient(0deg, var(--void) 65%, transparent);
+    padding:20px 20px calc(20px + env(safe-area-inset-bottom));
+    display:flex; justify-content:center;
+  }
+
+  /* ---------- journey card ---------- */
+  .journey-canvas-wrap{position:relative; height:38vh; min-height:260px; border-radius:18px; overflow:hidden; margin-bottom:26px; border:1px solid var(--line);}
+  #journeyCard{
+    background:radial-gradient(circle at 30% 0%, #1a1c34, #0c0d1a 65%);
+    border:1px solid var(--line-2); border-radius:18px; padding:30px 26px;
+  }
+  .jc-eyebrow{font-size:10.5px; letter-spacing:3px; color:var(--gold-dim); text-transform:uppercase; text-align:center; margin-bottom:8px;}
+  .jc-title{font-family:var(--serif); font-size:24px; font-weight:600; text-align:center; color:var(--ink); margin-bottom:2px;}
+  .jc-date{font-size:11px; color:var(--ink-faint); text-align:center; margin-bottom:24px;}
+  .jc-item{display:flex; gap:14px; padding:14px 0; border-top:1px solid var(--line);}
+  .jc-item:first-of-type{border-top:none;}
+  .jc-marker{flex:none; width:30px; display:flex; flex-direction:column; align-items:center; padding-top:3px;}
+  .jc-marker .dot{width:11px; height:11px; border-radius:50%;}
+  .jc-item-body{flex:1;}
+  .jc-chakraname{font-size:11px; color:var(--ink-faint); letter-spacing:.4px;}
+  .jc-quality{font-family:var(--serif); font-size:16.5px; font-weight:600; color:var(--ink); margin:2px 0 6px;}
+  .jc-sentence{font-size:13px; color:var(--ink-dim); line-height:1.75;}
+  .jc-sentence.empty{color:var(--ink-faint); font-style:italic;}
+
+  .export-row{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:22px;}
+  .toast{
+    position:fixed; top:112px; left:50%; transform:translateX(-50%) translateY(-12px); max-width:calc(100vw - 32px); text-align:center;
+    background:var(--void-3); border:1px solid var(--line-2); color:var(--ink);
+    font-size:13px; padding:11px 20px; border-radius:999px; z-index:200;
+    opacity:0; transition:.3s; pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:420px){
+    .intro-card h1{font-size:28px;}
+    .sheet-title{font-size:19px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    * { animation-duration: 0.001ms !important; transition-duration: 0.2s !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="canvasWrap"><canvas id="stage"></canvas></div>
+<div class="legend" id="legend"></div>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="title">נתיב האור</div>
+    <div class="sub">מסע היכרות עם הצ'אקרות</div>
+  </div>
+  <button class="iconbtn" id="helpBtn" title="הנחיות תפעול" aria-label="הנחיות תפעול"><span class="ico">☉</span><span>הנחיות</span></button>
+</div>
+
+<button class="topic-chip" id="topicChip" type="button" hidden>
+  <span class="tc-label">הנושא שלי</span>
+  <span class="tc-text" id="topicChipText"></span>
+  <span class="tc-edit">✎</span>
+</button>
+
+<button class="guide-cta" id="guideCta" type="button" hidden></button>
+
+<div class="hint" id="hint">גררו לסובב · גלגלת/צביטה לזום · הקשה על נקודת אור לפתיחה</div>
+
+<!-- topic screen -->
+<div class="topic-screen hidden" id="topicScreen">
+  <div class="topic-card">
+    <div class="intro-eyebrow">לפני שמתחילים</div>
+    <h2>מה אתם חוקרים, או רוצים לתמוך, עכשיו?</h2>
+    <p class="topic-sub">כתבו נושא במילים שלכם או בחרו מהרשימה. הכלי יבנה מסלול של תחנות וילווה בהסבר איך תשומת לב לכל מרכז אנרגטי יכולה לתמוך בנושא הזה.</p>
+    <textarea id="topicInput" rows="2" maxlength="140" placeholder="למשל: החלטה על שינוי בעבודה, או להרגיש יותר רגוע לפני הרצאה"></textarea>
+    <div class="topic-match" id="topicMatch"></div>
+    <div class="topic-chips" id="topicChips"></div>
+    <div class="topic-actions">
+      <button class="btn-primary" id="topicGo" type="button">בנו לי מסלול</button>
+      <button class="btn-link" id="topicSkip" type="button">להמשיך בחקירה חופשית</button>
+    </div>
+    <div class="topic-note">כלי להתבוננות ולתרגול אישי. הוא אינו תחליף לטיפול או לייעוץ מקצועי.</div>
+  </div>
+</div>
+
+<!-- intro -->
+<div class="intro" id="intro">
+  <div class="intro-card">
+    <div class="intro-eyebrow">מסע תלת-ממדי אישי</div>
+    <h1>נתיב האור</h1>
+    <p>מולכם דמות אנוש עדינה, בנויה מאור ומנקודות זוהרות. לאורכה שמונה תחנות אנרגטיות — הצ'אקרות.</p>
+    <div class="intro-steps">
+      <div class="intro-step"><span class="dot"></span><span>הגדירו נושא שאתם חוקרים, והכלי יציע מסלול תחנות ויסביר איך כל מרכז אנרגטי יכול לתמוך בו.</span></div>
+      <div class="intro-step"><span class="dot"></span><span>צאו למסע מודרך, או סובבו את הדמות בחופשיות ובחרו תחנה שמעניינת אתכם.</span></div>
+      <div class="intro-step"><span class="dot"></span><span>בכל תחנה תפגשו תפקיד, שאלה מובילה ואיכויות. סמנו את מה שמדבר אליכם עכשיו.</span></div>
+      <div class="intro-step"><span class="dot"></span><span>בסיום הטיול, רדו וכתבו משפט אחד ליד כל איכות שבחרתם.</span></div>
+      <div class="intro-step"><span class="dot"></span><span>מתוך זה ייווצר עבורכם מסע אנרגטי אישי סביב הנושא, שאפשר לשמור, לשתף או לשלוח לעצמכם.</span></div>
+    </div>
+    <div class="controls-legend">
+      <div class="controls-title">איך מנווטים</div>
+      <div class="controls-grid">
+        <div class="ctrl"><span class="ci">⟳</span><span>גרירה — סיבוב הדמות סביב עצמה</span></div>
+        <div class="ctrl"><span class="ci">↕</span><span>גרירה אנכית — הטיית זווית המבט</span></div>
+        <div class="ctrl"><span class="ci">⚲</span><span>גלגלת עכבר / צביטה — התקרבות והתרחקות</span></div>
+        <div class="ctrl"><span class="ci">✦</span><span>הקשה על נקודת אור — פתיחת התחנה</span></div>
+        <div class="ctrl"><span class="ci">⤾</span><span>הקשה כפולה — איפוס התצוגה</span></div>
+      </div>
+    </div>
+    <button class="btn-primary" id="startBtn">להתחיל לחקור</button>
+  </div>
+</div>
+
+<!-- chakra sheet -->
+<div class="sheet" id="sheet" role="dialog" aria-modal="false">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <div class="sheet-title-wrap">
+      <div class="sheet-dot" id="sheetDot"></div>
+      <div>
+        <span class="sheet-title" id="sheetTitle"></span>
+        <span class="sheet-sanskrit" id="sheetSanskrit"></span>
+        <div class="sheet-loc" id="sheetLoc"></div>
+      </div>
+    </div>
+    <button class="sheet-close" id="sheetClose" aria-label="סגירה">×</button>
+  </div>
+  <div id="sheetBonusFlag"></div>
+  <div class="sheet-label">תפקיד ויעוד</div>
+  <div class="sheet-desc" id="sheetDesc"></div>
+  <div class="sheet-bal" id="sheetBal"></div>
+  <div class="sheet-topic" id="sheetTopicBlock">
+    <div class="sheet-label" id="sheetTopicLabel">בנושא שלך</div>
+    <div class="sheet-why" id="sheetWhy"></div>
+    <div class="sheet-q" id="sheetQ"></div>
+  </div>
+  <details class="sheet-practice" id="sheetPractice">
+    <summary>איך מפנים תשומת לב למרכז הזה</summary>
+    <div class="practice-body" id="sheetPracticeBody"></div>
+  </details>
+  <div class="sheet-label">איכויות לבחירה</div>
+  <div class="qgrid" id="sheetQuals"></div>
+  <div class="guide-nav" id="guideNav"></div>
+</div>
+
+<!-- journey dock -->
+<div class="dock" id="dock">
+  <div class="dock-tab" id="dockTab">
+    <span>המסע שלי</span>
+    <span class="count" id="dockCount">0</span>
+  </div>
+  <div class="dock-strip" id="dockStrip">
+    <div class="dock-row" id="dockRow"></div>
+    <div class="dock-actions">
+      <span class="dock-hint">סמנו לפחות איכות אחת כדי להמשיך</span>
+      <button class="btn-small" id="finishBtn">סיימתי את הטיול</button>
+    </div>
+  </div>
+</div>
+
+<!-- reflect screen -->
+<div class="screen" id="reflectScreen">
+  <div class="screen-head">
+    <button class="back" id="reflectBack">→ חזרה לטיול</button>
+    <h2>לכתוב את הרגע</h2>
+    <span style="width:70px"></span>
+  </div>
+  <div class="screen-body">
+    <p class="screen-intro">לפני שנרקום מהן מסע אחד — כתבו ליד כל איכות שבחרתם, במשפט אחד, במה היא יכולה לעזור לכם עכשיו.</p>
+    <div id="reflectList"></div>
+  </div>
+  <div class="screen-footer">
+    <button class="btn-primary" id="createJourneyBtn">ליצור את המסע האנרגטי שלי</button>
+  </div>
+</div>
+
+<!-- journey screen -->
+<div class="screen" id="journeyScreen">
+  <div class="screen-head">
+    <button class="back" id="journeyBack">→ חזרה</button>
+    <h2>המסע האנרגטי שלך</h2>
+    <span style="width:70px"></span>
+  </div>
+  <div class="screen-body">
+    <div class="journey-canvas-wrap"><canvas id="journeyStage" style="width:100%; height:100%; display:block;"></canvas></div>
+    <div id="journeyCard"></div>
+    <div class="export-row">
+      <button class="btn-small" id="downloadImgBtn">⬇ הורדת תמונה</button>
+      <button class="btn-ghost" id="downloadTxtBtn">⬇ הורדת טקסט</button>
+      <button class="btn-ghost" id="shareBtn">↗ שיתוף</button>
+      <button class="btn-ghost" id="mailBtn">✉ שליחה לעצמי</button>
+      <button class="btn-ghost" id="restartBtn">↺ מסע חדש</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   CHAKRA DATA
+   ============================================================ */
+const CHAKRAS = [
+  {
+    id:'root', order:1, name:"שורש", sanskrit:"מולדהארה", color:'#B2394A',
+    y:-3.0, location:"בסיס עמוד השדרה, בין הרגליים",
+    desc:"המרכז המחבר אתכם לגוף, לאדמה ולתחושת הקיום הבסיסית — הבית הראשון של הנפש.",
+    qualities:[
+      {id:'q1', name:'קרקוע', desc:'יציבות ונוכחות בגוף וברגע הזה'},
+      {id:'q2', name:'ביטחון בסיסי', desc:'אמון שיש לכם מקום בעולם'},
+      {id:'q3', name:'שייכות', desc:'חיבור למשפחה, לקהילה, לשורשים'},
+      {id:'q4', name:'עוצמה גופנית', desc:'חיוניות, כוח וחוסן פיזי'},
+      {id:'q5', name:'סבלנות', desc:'לתת לדברים להבשיל בזמנם'},
+      {id:'q6', name:'אמון בקיום', desc:'הרגשה שהחיים תומכים בכם'},
+      {id:'q7', name:'מיקוד שקט', desc:'נוכחות מרוכזת, לא מוסחת'}
+    ]
+  },
+  {
+    id:'sacral', order:2, name:"מין", sanskrit:"סוואדהיסטהאנה", color:'#C97A34',
+    y:-1.9, location:"מתחת לטבור, אזור האגן",
+    desc:"מקור הזרימה הרגשית, היצירתיות והתשוקה לחיים — המקום שבו הרגש הופך לתנועה.",
+    qualities:[
+      {id:'q1', name:'יצירתיות', desc:'להוליד רעיונות וצורות חדשות'},
+      {id:'q2', name:'זרימה רגשית', desc:'נוחות לתת לרגשות לנוע ולהשתנות'},
+      {id:'q3', name:'חושניות', desc:'הנאה מהחיים דרך החושים'},
+      {id:'q4', name:'תשוקה', desc:'אש פנימית שמניעה לפעולה'},
+      {id:'q5', name:'גמישות', desc:'יכולת להסתגל ולזרום עם שינוי'},
+      {id:'q6', name:'קרבה', desc:'להתחבר לאחר מקרוב, בלי חשש'},
+      {id:'q7', name:'הנאה', desc:'רשות עצמית ליהנות בלי אשמה'}
+    ]
+  },
+  {
+    id:'solar', order:3, name:"מקלעת השמש", sanskrit:"מניפורה", color:'#D6A536',
+    y:-0.9, location:"מעל הטבור, מתחת לצלעות",
+    desc:"מרכז הרצון האישי והביטחון העצמי — המקום שממנו פועלים מתוך בחירה ולא מתוך פחד.",
+    qualities:[
+      {id:'q1', name:'ביטחון עצמי', desc:'אמונה ביכולות ובשיפוט שלכם'},
+      {id:'q2', name:'החלטיות', desc:'לבחור ולעמוד מאחורי הבחירה'},
+      {id:'q3', name:'עוצמה אישית', desc:'תחושת מסוגלות להשפיע על חייכם'},
+      {id:'q4', name:'כבוד עצמי', desc:'הערכה פנימית שאינה תלויה באחר'},
+      {id:'q5', name:'מוטיבציה', desc:'אש פנימית שמניעה להשגה'},
+      {id:'q6', name:'גבולות ברורים', desc:'לומר כן ולא מתוך בהירות'},
+      {id:'q7', name:'אחריות אישית', desc:'בעלות על הבחירות שלכם'}
+    ]
+  },
+  {
+    id:'heart-plexus', order:4, bonus:true, name:"מקלעת הלב", sanskrit:"מרכז נוסף", color:'#D98B6B',
+    y:0.0, location:"בין מקלעת השמש ללב",
+    desc:"תחנת בונוס: מרכז פחות מוכר, המוזכר בתרגולי אנרגיה עכשוויים כגשר בין האש (רצון) למים (רגש) — שם עוצמה אישית נפגשת עם רכות הלב.",
+    qualities:[
+      {id:'q1', name:'רצון פעיל', desc:'כוח פנימי שמניע ליצור ולפעול'},
+      {id:'q2', name:'משאלת לב', desc:'כיוון עמוק שנובע מהלב ולא רק מהראש'},
+      {id:'q3', name:'תוקף במאור פנים', desc:'לעמוד על שלכם מתוך רכות ולא קשיחות'},
+      {id:'q4', name:'איזון אש-מים', desc:'הרמוניה בין עוצמה לרגישות'},
+      {id:'q5', name:'יציבות רגשית', desc:'קרקע רגשית שלא נסחפת בקיצוניות'}
+    ]
+  },
+  {
+    id:'heart', order:5, name:"לב", sanskrit:"אנהטה", color:'#4F9D74', color2:'#E27D8E',
+    y:0.85, location:"מרכז החזה",
+    desc:"הגשר בין המרכזים הארציים לעליונים, בין הרצון לרגש — מפגש בין אש למים.",
+    qualities:[
+      {id:'q1', name:'אהבה', desc:'פתיחות וחיבור אמיתי לעצמכם ולאחר'},
+      {id:'q2', name:'חמלה', desc:'להכיל כאב — שלכם ושל אחרים — ברכות'},
+      {id:'q3', name:'סליחה', desc:'שחרור ממשקל שכבר לא משרת אתכם'},
+      {id:'q4', name:'פתיחות', desc:'נכונות לתת ולקבל בלי הגנות'},
+      {id:'q5', name:'איזון פנימי', desc:'הרמוניה בין נתינה לקבלה'},
+      {id:'q6', name:'הכרת תודה', desc:'לראות את השפע שכבר קיים'},
+      {id:'q7', name:'חיבור', desc:'קרבה לעצמכם, לאחרים, לחיים'}
+    ]
+  },
+  {
+    id:'throat', order:6, name:"גרון", sanskrit:"ויסודהה", color:'#3E93AC',
+    y:2.35, location:"הגרון",
+    desc:"מרכז הביטוי והאמת — המקום שבו הפנימי הופך לקול, למילה וליצירה נשמעת.",
+    qualities:[
+      {id:'q1', name:'ביטוי עצמי', desc:'לומר את מה שאמיתי בשבילכם'},
+      {id:'q2', name:'אמת', desc:'כנות עם עצמכם ועם הסביבה'},
+      {id:'q3', name:'הקשבה', desc:'נוכחות אמיתית כלפי מה שהאחר אומר'},
+      {id:'q4', name:'יצירה', desc:'הבעה של הפנימי דרך קול, כתיבה, אמנות'},
+      {id:'q5', name:'תקשורת ברורה', desc:'להעביר כוונה במדויק'},
+      {id:'q6', name:'זכות קול', desc:'תחושה שמותר לכם להישמע'},
+      {id:'q7', name:'שקט פנימי', desc:'להקשיב גם למה שאין לו מילים'}
+    ]
+  },
+  {
+    id:'third-eye', order:7, name:"עין שלישית", sanskrit:"אג'נה", color:'#585BB0',
+    y:3.15, location:"בין הגבות",
+    desc:"מרכז החזון והתובנה — המקום שממנו רואים מעבר למובן מאליו.",
+    qualities:[
+      {id:'q1', name:'אינטואיציה', desc:'ידיעה פנימית שלא תלויה רק בהיגיון'},
+      {id:'q2', name:'בהירות', desc:'ראייה נקייה של המצב כפי שהוא'},
+      {id:'q3', name:'דמיון', desc:'לדמיין מציאות שעוד לא קיימת'},
+      {id:'q4', name:'חזון', desc:'כיוון פנימי ברור לעתיד הרצוי'},
+      {id:'q5', name:'תובנה', desc:'הבנה עמוקה שחורגת מהשטח'},
+      {id:'q6', name:'ראיית על', desc:'להתבונן על התמונה הרחבה'},
+      {id:'q7', name:'חוכמה פנימית', desc:'אמון בידיעה שכבר קיימת בכם'}
+    ]
+  },
+  {
+    id:'right-brain', order:8, bonus:true, name:"מוח ימין", sanskrit:"היגיון אינטואיטיבי", color:'#7A6FC4',
+    x:-0.32, y:3.55, z:0.14, location:"צד ראשי, מול העין השלישית",
+    desc:"תחנת בונוס: ההמיספרה הימנית, המזוהה בתפיסה עממית עם תפיסה הוליסטית ואינטואיטיבית של המציאות.",
+    qualities:[
+      {id:'q1', name:'דמיון חופשי', desc:'לראות תמונות ואפשרויות מעבר למוכר'},
+      {id:'q2', name:'חשיבה הוליסטית', desc:'לתפוס את התמונה השלמה בבת אחת'},
+      {id:'q3', name:'חיבור רגשי-חושי', desc:'לקלוט את העולם דרך תחושה ולא רק ניתוח'},
+      {id:'q4', name:'ספונטניות', desc:'לפעול מתוך זרימה ולא רק תכנון'},
+      {id:'q5', name:'יצירתיות אמנותית', desc:'ביטוי דרך צורה, צליל, תנועה'}
+    ]
+  },
+  {
+    id:'left-brain', order:9, bonus:true, name:"מוח שמאל", sanskrit:"היגיון מבני", color:'#4A7FBF',
+    x:0.32, y:3.55, z:0.14, location:"צד ראשי, מול העין השלישית",
+    desc:"תחנת בונוס: ההמיספרה השמאלית, המזוהה בתפיסה עממית עם סדר, ניתוח ושפה.",
+    qualities:[
+      {id:'q1', name:'חשיבה מסודרת', desc:'לפרק דברים לשלבים ברורים'},
+      {id:'q2', name:'ניתוח לוגי', desc:'להבין סיבה ותוצאה'},
+      {id:'q3', name:'דיוק בשפה', desc:'למצוא את המילה המדויקת'},
+      {id:'q4', name:'תכנון', desc:'לראות את הדרך צעד אחר צעד'},
+      {id:'q5', name:'שיפוט מציאותי', desc:'להעריך מצבים בפרספקטיבה מפוכחת'}
+    ]
+  },
+  {
+    id:'pineal', order:10, bonus:true, name:"האיצטרובל", sanskrit:"שער לתודעה גבוה", color:'#D9D4F5',
+    x:0, y:3.32, z:-0.12, location:"עמוק במרכז הראש, מאחורי העין השלישית",
+    desc:"תחנת בונוס: בלוטה זעירה במרכז המוח, המווסתת ביולוגית את מקצבי היום והלילה — ובתרגולי אנרגיה נתפסת כשער בין התודעה הרגילה לתודעה המורחבת.",
+    qualities:[
+      {id:'q1', name:'תודעה מורחבת', desc:'לחצות מעבר לתפיסה הרגילה של המציאות'},
+      {id:'q2', name:'זיכרון חלומות', desc:'קשר לעולם הלילה והדמיון הפנימי'},
+      {id:'q3', name:'אור פנימי', desc:'בהירות שאינה תלויה בעיניים'},
+      {id:'q4', name:'ויסות מחזורי', desc:'התאמה לקצב הפנימי, ליום וללילה'},
+      {id:'q5', name:'מעבר בין ממדים', desc:'חוויה של סף בין הידוע ללא-נודע'}
+    ]
+  },
+  {
+    id:'crown', order:11, name:"כתר", sanskrit:"סהסררה", color:'#9678D6',
+    y:4.5, location:"קודקוד הראש",
+    desc:"מרכז החיבור הרוחני והתודעה המורחבת — שם האישי נפגש עם הכוללני.",
+    qualities:[
+      {id:'q1', name:'חיבור רוחני', desc:'שייכות למשהו גדול מכם'},
+      {id:'q2', name:'תודעה מורחבת', desc:'להחזיק פרספקטיבה רחבה'},
+      {id:'q3', name:'אחדות', desc:'שלמות בין חלקי העצמי'},
+      {id:'q4', name:'השראה', desc:'פתיחות לקבל ולשדר רעיונות חדשים'},
+      {id:'q5', name:'שחרור', desc:'להניח שליטת יתר, לבטוח בזרימה'},
+      {id:'q6', name:'נוכחות', desc:'כאן ועכשיו, מעבר לזמן'},
+      {id:'q7', name:'שלווה', desc:'שקט פנימי שלא תלוי בנסיבות'}
+    ]
+  }
+];
+const chakraById = {}; CHAKRAS.forEach(c=>chakraById[c.id]=c);
+
+/* ============================================================
+   CHAKRA ROLES — תפקיד, יעוד ותרגול תשומת לב לכל תחנה
+   role: תפקיד ויעוד · balanced: כשהמרכז פעיל · attention: איך מפנים אליו תשומת לב
+   gs: איך המרכז תומך בכל נושא (משפט כללי) · gq: שאלה כללית ({t} = הנושא)
+   ============================================================ */
+const CHAKRA_INFO = {
+  'root':{
+    role:"מרכז הקיום והביטחון הבסיסי. תפקידו לעגן אתכם בגוף, באדמה ובתחושה שיש לכם מקום ותמיכה. זו הקרקע שעליה כל מהלך אחר יכול להיבנות.",
+    balanced:"תחושת יציבות, נוכחות בגוף, ביטחון בסיסי ויכולת להישאר ברגע.",
+    attention:"הפנו תשומת לב לבסיס הגוף ולמגע של האגן והרגליים עם הכיסא או הרצפה. נשמו לאט, ודמיינו שורשים יורדים מכם אל האדמה.",
+    gs:"מעגן את הנושא בגוף, ביציבות ובתחושת ביטחון",
+    gq:"מה כבר יציב ותומך סביב {t}, ומה נותן קרקע?"
+  },
+  'sacral':{
+    role:"מרכז אנרגיית החיים, היצירה, התשוקה והחושניות. תפקידו להניע זרימה: רגש, משיכה, הנאה והולדה של דברים חדשים.",
+    balanced:"זרימה, גמישות, הנאה, יצירתיות ורצון חי.",
+    attention:"הפנו תשומת לב לאזור האגן והבטן התחתונה. נשמו נשימה רכה ומתגלגלת כמו גל, ושימו לב לתחושות של תנועה ושל חיוּת.",
+    gs:"מביא לנושא חיוּת, זרימה והנאה",
+    gq:"איפה יש חיוּת, הנאה או משיכה סביב {t}, ומה רוצה לנוע או להיווצר?"
+  },
+  'solar':{
+    role:"מרכז הרצון האישי, העוצמה והכוח לפעול. תפקידו להפוך כוונה לבחירה ולמעשה, ולהחזיק גבולות ברורים.",
+    balanced:"ביטחון עצמי, החלטיות, מוטיבציה וגבולות בריאים.",
+    attention:"הניחו יד על הבטן העליונה, מעל הטבור. נשמו אל האזור הזה, שימו לב לחום ולכוח, ושאלו מה אתם באמת רוצים.",
+    gs:"מעניק לנושא רצון, כוח ובחירה ברורה",
+    gq:"מה הרצון האמיתי סביב {t}, ומה הצעד הבא שמרגיש נכון לעשות?"
+  },
+  'heart-plexus':{
+    role:"מרכז גישור בין אש למים: בין הרצון והעוצמה האישית לבין העולם הרגשי. תפקידו לאפשר לעוצמה לפעול מתוך רכות, ולרגש לקבל כיוון ומשמעות.",
+    balanced:"רצון מוגבר לצד מערכת רגשית מגבה, יציבה ומרככת.",
+    attention:"הפנו תשומת לב לנקודה שבין הבטן העליונה ללב. דמיינו להבה ומים נפגשים ומתמזגים, ונשמו אל המפגש הזה.",
+    gs:"משלב עוצמה אישית עם גיבוי רגשי רך",
+    gq:"איך אפשר לפעול סביב {t} מתוך עוצמה ורכות יחד?"
+  },
+  'heart':{
+    role:"מרכז החיבור, האהבה והחמלה, לעצמכם ולאחרים. תפקידו לגשר בין המרכזים התחתונים (גוף ורצון) לעליונים (ביטוי, ראייה ורוח).",
+    balanced:"פתיחות, חמלה, איזון בין נתינה לקבלה והכרת תודה.",
+    attention:"הניחו יד על מרכז החזה. נשמו כך שהלב מתרחב עם כל שאיפה, ושימו לב מה מתעורר.",
+    gs:"מוסיף לנושא חיבור, חמלה ופתיחות",
+    gq:"מה הלב מרגיש ואומר לגבי {t}, ומה יכול להתרכך?"
+  },
+  'throat':{
+    role:"מרכז הביטוי והאמת. תפקידו להפוך את מה שפנימי למילה, לקול וליצירה, ולהקשיב באותה מידה.",
+    balanced:"ביטוי כן, הקשבה, תקשורת ברורה ותחושה שמותר להישמע.",
+    attention:"הפנו תשומת לב לגרון ולצוואר, ורפו את הלסת והכתפיים. הוציאו אנחה או זמזום עדין, ושימו לב לרטט.",
+    gs:"נותן לנושא קול ומילים, ומאפשר גם להקשיב",
+    gq:"מה רוצה להיאמר סביב {t}, לי או למישהו אחר, ומה צריך להקשיב לו?"
+  },
+  'third-eye':{
+    role:"מרכז הראייה הפנימית, האינטואיציה והבהירות. תפקידו לאפשר לראות את התמונה כפי שהיא, ואת מה שעוד לא נראה.",
+    balanced:"בהירות, אינטואיציה, דמיון וחזון.",
+    attention:"הפנו תשומת לב לנקודה שבין הגבות, עצמו עיניים ודמיינו שם אור עדין. שאלו שאלה אחת והמתינו לתמונה, למילה או לתחושה.",
+    gs:"מביא לנושא בהירות, אינטואיציה וראייה פנימית",
+    gq:"מה נראה בבהירות, ומה האינטואיציה מרמזת לגבי {t}?"
+  },
+  'right-brain':{
+    role:"ההמיספרה הימנית, שמזוהה בתפיסה עממית עם תפיסה הוליסטית, דימויית ואינטואיטיבית. תפקידה לראות תמונה שלמה, לדמיין ולחבר.",
+    balanced:"דמיון חי, חשיבה הוליסטית וזרימה יצירתית.",
+    attention:"הפנו תשומת לב לצד הימני של הראש ורפו אותו. דמיינו תמונה, צבע או מרחב פתוח סביב הנושא, בלי לשפוט.",
+    gs:"מוסיף לנושא דימוי, דמיון ותמונה כוללת",
+    gq:"איזו תמונה, דימוי או תחושה כוללת עולה סביב {t}?"
+  },
+  'left-brain':{
+    role:"ההמיספרה השמאלית, שמזוהה בתפיסה עממית עם סדר, ניתוח, שפה ותכנון. תפקידה לארגן, לנסח ולבנות צעדים.",
+    balanced:"חשיבה מסודרת, ניסוח מדויק ותכנון מציאותי.",
+    attention:"הפנו תשומת לב לצד השמאלי של הראש. דמיינו רשימה או מפה שמסדרת את הנושא לשלבים קטנים וברורים.",
+    gs:"מסדר את הנושא להיגיון, ניסוח וצעדים",
+    gq:"מה הסדר וההיגיון שיעזרו עם {t}, ומהם שלושה צעדים ברורים?"
+  },
+  'pineal':{
+    role:"בלוטה זעירה במרכז המוח שמווסתת מקצבי יום ולילה, ובתרגולי אנרגיה נתפסת כשער לתודעה מורחבת. תפקידה לפתוח פרספקטיבה גבוהה ולראות את הנושא מתוך תמונה גדולה.",
+    balanced:"פרספקטיבה רחבה, שקט פנימי וחיבור לקצב הפנימי.",
+    attention:"הפנו תשומת לב למרכז הראש, עמוק מאחורי העין השלישית. דמיינו נקודת אור קטנה ונשמו אליה לאט, מתוך שקט.",
+    gs:"פותח פרספקטיבה גבוהה ותמונה גדולה",
+    gq:"איך נראה {t} מתוך פרספקטיבה רחבה, ומה חשוב באמת?"
+  },
+  'crown':{
+    role:"מרכז החיבור למשהו גדול מהאישי: משמעות, שלווה ותודעה מורחבת. תפקידו לתת הקשר רחב ולאפשר שחרור של שליטת יתר.",
+    balanced:"אמון, שלווה, השראה ותחושת שייכות למכלול.",
+    attention:"הפנו תשומת לב לקודקוד הראש ודמיינו אור יורד מלמעלה וממלא אתכם. נשמו, ושחררו את הצורך לשלוט.",
+    gs:"מעניק לנושא הקשר רחב, אמון ושחרור",
+    gq:"מה גדול ממני סביב {t}, ומה אפשר לשחרר ולסמוך?"
+  }
+};
+CHAKRAS.forEach(c=>Object.assign(c, CHAKRA_INFO[c.id]||{}));
+
+/* ============================================================
+   TOPICS — נושאים מוכנים, מסלול תחנות מומלץ ושאלה מובילה לכל תחנה
+   lens[chakraId] = [איך המרכז תומך בנושא, שאלה מובילה]
+   ============================================================ */
+const GENERIC_PATH = ['root','sacral','solar','heart','throat','third-eye','crown'];
+const TOPICS = [
+  { id:'decision', title:"קבלת החלטה", blurb:"צומת, דילמה, בחירה בין אפשרויות",
+    keywords:["החלט","להחליט","דילמה","מתלבט","מתלבטת","צומת","בחירה","לבחור","הצעה"],
+    path:['root','solar','heart','left-brain','third-eye'],
+    lens:{
+      'root':["החלטה טובה צומחת מקרקע יציבה. תשומת לב לשורש עוזרת לבדוק מה הבסיס: צרכים בסיסיים, ביטחון, ומה אי אפשר לוותר עליו.","מה הצורך הבסיסי שההחלטה הזו חייבת לשמור עליו?"],
+      'solar':["זה מרכז הבחירה והרצון. תשומת לב לשם עוזרת להבדיל בין מה שרוצים לבין מה שמפחדים ממנו או מה שמצפים מאיתנו.","אם לא היה פחד מטעות או מאכזבה, מה הרצון האמיתי כאן?"],
+      'heart':["ידיעת הלב מראה מה מרחיב ומה מכווץ. היא משלימה את החישוב ההגיוני.","איזו אפשרות מרחיבה את הלב, ואיזו מכווצת אותו?"],
+      'left-brain':["החשיבה המסדרת עוזרת לפרק את ההחלטה לנתונים, ליתרונות ולחסרונות ולצעדים.","מה הנתונים והצעדים הברורים של כל אפשרות?"],
+      'third-eye':["האינטואיציה והראייה הפנימית מוסיפות מידע שלא תמיד מופיע ברשימה.","איזו תמונה או הבנה עולה כשמדמיינים את עצמנו שנה אחרי כל בחירה?"]
+    }},
+  { id:'calm', title:"הרגעה והפגת לחץ", blurb:"מתח, דאגה, חרדה, צורך בוויסות",
+    keywords:["לחץ","מתח","חרד","פחד","דאגה","הרגעה","להירגע","ויסות","סטרס","עצבנ"],
+    path:['root','sacral','heart-plexus','heart','crown'],
+    lens:{
+      'root':["כשיש לחץ המערכת מרגישה חוסר ביטחון. עיגון בשורש מחזיר קרקע, גוף ונשימה.","מה אפשר להרגיש עכשיו שיציב ובטוח: מגע הגוף עם הקרקע, הנשימה?"],
+      'sacral':["מתח רגשי נוטה להיתקע. זרימה רכה במרכז הזה עוזרת לרגש לנוע במקום להיתקע.","איזו תנועה קטנה, נשימה או הנאה פשוטה יכולה לרכך את המתח?"],
+      'heart-plexus':["המרכז הזה מחבר עוצמה פנימית עם גיבוי רגשי יציב, כך שאפשר להתמודד בלי להישטף.","מה מגבה אותנו עכשיו, כמו חבר טוב שנמצא לידנו?"],
+      'heart':["חמלה עצמית מרגיעה את מערכת העצבים ומרככת ביקורת פנימית.","מה היינו אומרים לחבר אהוב שנמצא במצב הזה?"],
+      'crown':["פרספקטיבה רחבה ושחרור של צורך בשליטה מקטינים את תחושת הלחץ.","מה מתוך זה אפשר להניח לרגע, ולסמוך שדברים מתארגנים?"]
+    }},
+  { id:'selfworth', title:"ביטחון וערך עצמי", blurb:"להאמין בעצמי, כבוד עצמי, תחושת ראויות",
+    keywords:["ביטחון עצמי","ערך עצמי","הערכה עצמית","לא מספיק","כבוד עצמי","ראוי","ביקורת עצמית","דימוי עצמי"],
+    path:['root','solar','heart','throat'],
+    lens:{
+      'root':["תחושת ערך מתחילה בזכות הבסיסית להיות כאן ולתפוס מקום.","איפה יש תחושה של מקום ושייכות, בלי להוכיח כלום?"],
+      'solar':["זה מרכז העוצמה האישית והמסוגלות. כאן נבנים ביטחון וכבוד עצמי.","באיזה רגע הייתה תחושת עוצמה אישית, ומה היה שם?"],
+      'heart':["קבלה עצמית פותחת את הלב כלפי עצמנו, כפי שאנחנו.","איזו איכות בנו ראויה לאהבה בדיוק כפי שהיא?"],
+      'throat':["ביטחון נשמע בקול. הבעה כנה בונה אמון עצמי.","מה רוצה להיאמר מתוך ביטחון, ולמי?"]
+    }},
+  { id:'creativity', title:"יצירה והשראה", blurb:"כתיבה, מוזיקה, אמנות, חסימה יצירתית",
+    keywords:["יצירה","יצירתי","יצירתיות","השראה","תקוע","כתיבה","מוזיקה","אמנות","לצייר","לחבר"],
+    path:['sacral','right-brain','left-brain','throat','crown'],
+    lens:{
+      'sacral':["זה מקור החיוּת והיצירה. תשומת לב לכאן מעוררת רצון ליצור והנאה בתהליך.","מה רוצה להיווצר, ואיפה יש הנאה בתהליך?"],
+      'right-brain':["הדמיון החופשי והתפיסה הכוללת מזינים רעיונות חדשים.","איזה דימוי, צליל או צבע מבקש להופיע בלי לשפוט?"],
+      'left-brain':["מבנה פשוט נותן ליצירה מקום לגדול ולהתממש.","איזו מסגרת קטנה תיתן ליצירה מקום להתפתח?"],
+      'throat':["יצירה היא הבעה של פנימי. תשומת לב לגרון פותחת את הדרך החוצה.","איך הדבר הפנימי הזה יכול להתבטא החוצה?"],
+      'crown':["השראה מגיעה מפתיחות. שחרור שליטה מאפשר לרעיונות לעבור דרכנו.","מה מבקש לעבור דרכנו כהשראה?"]
+    }},
+  { id:'relationships', title:"זוגיות וקרבה", blurb:"מערכות יחסים, משפחה, חברוּת, בדידות",
+    keywords:["זוגיות","יחסים","קרבה","משפחה","חבר","חברה","אהבה","בדידות","ריב","בן זוג","בת זוג"],
+    path:['root','sacral','solar','heart','throat'],
+    lens:{
+      'root':["ביטחון ושייכות הם הבסיס לכל קשר. תשומת לב לשורש מרגיעה את הפחד מהפקרה.","מה נותן תחושת ביטחון ושייכות בקשר הזה?"],
+      'sacral':["קרבה, חושניות ומשיכה חיות כאן. המרכז הזה מראה כמה קרבה רצויה ומה מעורר הססנות.","איזו קרבה רצויה כאן, ואיזו מעוררת הססנות?"],
+      'solar':["קשר בריא צריך גבולות. אפשר להיות קרובים באמת רק כשיש מי שקרוב.","איפה נכון לומר כן ואיפה לא, כדי להישאר נאמנים לעצמנו בקשר?"],
+      'heart':["זה מרכז האהבה, החמלה והסליחה, שמחזיק את הקשר.","מה הלב רוצה לתת או לקבל כאן?"],
+      'throat':["תקשורת כנה היא הגשר בין שני אנשים.","מה עוד לא נאמר, ואיך אפשר לומר זאת ברכות ובכנות?"]
+    }},
+  { id:'boundaries', title:"גבולות", blurb:"לומר לא, שחיקה, לא להיגרר",
+    keywords:["גבול","גבולות","לסרב","לומר לא","שחיקה","נשחק","מנצל","לרצות","ריצוי"],
+    path:['root','solar','heart-plexus','throat','heart'],
+    lens:{
+      'root':["גבול הוא קודם כל גבול הגוף והמרחב. תחושת ביטחון בגוף מאפשרת להגדיר אותו.","מה המרחב והזמן שהגוף צריך כדי להרגיש בטוח?"],
+      'solar':["זה מרכז הכוח האישי והגבולות. כאן מרגישים מתי משהו לא מתאים.","איפה ניתן יותר ממה שרצינו, ומה הגבול שנכון לשים?"],
+      'heart-plexus':["מרכז הגישור בין אש למים מאפשר לעמוד על הגבול מתוך רכות, לא מתוך קשיחות.","איך אפשר לעמוד על הגבול בלי קשיחות ובלי התנצלות?"],
+      'throat':["גבול נאמר במילים. תשומת לב לגרון עוזרת לנסח בבהירות.","איזה משפט קצר וברור מבטא את הגבול?"],
+      'heart':["חמלה כלפי האחר וכלפי עצמנו מאפשרת גבול שלא פוגע.","איך אפשר לכבד גם את הצורך שלנו וגם את האדם שמולנו?"]
+    }},
+  { id:'change', title:"שינוי ומעבר", blurb:"פרידה, התחלה חדשה, אי ודאות",
+    keywords:["שינוי","מעבר","פרידה","התחלה חדשה","משבר","אי ודאות","עוברים","מתחילים"],
+    path:['root','sacral','solar','heart','third-eye','crown'],
+    lens:{
+      'root':["בזמן שינוי צריך נקודת אחיזה. עיגון בשורש מחזיר יציבות כשהכול זז.","מה נשאר יציב גם כשהכול משתנה?"],
+      'sacral':["גמישות וזרימה מאפשרות לנוע עם השינוי במקום להתנגד לו.","איפה אפשר לזרום עם השינוי במקום להתנגד לו?"],
+      'solar':["שינוי דורש אומץ לבחור ולעשות צעד.","איזה צעד קטן אחד מתאים לעשות עכשיו?"],
+      'heart':["יש אבל על מה שנעלם, ופתיחות למה שבא.","על מה צריך להיפרד ברכות, ומה מוכן להיפתח?"],
+      'third-eye':["חזון עוזר לראות מעבר לאי הוודאות.","איך נראה הצד השני של המעבר?"],
+      'crown':["אמון בתהליך מאפשר לשחרר שליטת יתר.","מה אפשר לשחרר ולסמוך על התהליך?"]
+    }},
+  { id:'motivation', title:"מוטיבציה והוצאה לפועל", blurb:"דחיינות, התמדה, להתחיל ולהתמיד",
+    keywords:["מוטיבציה","דחיינות","דוחה","להתחיל","להתמיד","מטרה","ביצוע","עצלות","תקועים"],
+    path:['root','sacral','solar','heart-plexus','left-brain'],
+    lens:{
+      'root':["התמדה מתחילה בגוף ובשגרה. עיגון נותן עקביות.","איזו שגרה קטנה ויציבה תחזיק את ההתקדמות?"],
+      'sacral':["תשוקה ושמחה מניעות לפעולה יותר מאשר חובה.","מה בתהליך הזה מהנה או מושך, ואיך אפשר להגביר את זה?"],
+      'solar':["זה מרכז הרצון והכוח. כאן כוונה הופכת לצעד.","מה הרצון הפעיל כאן, ומה הצעד הראשון שאפשר לעשות היום?"],
+      'heart-plexus':["רצון שיש לו גיבוי רגשי נשאר לאורך זמן, ולא נשחק.","מה יגבה את הרצון הזה רגשית, כדי שיחזיק לאורך זמן?"],
+      'left-brain':["תכנון ברור מוריד התנגדות וממיר רצון לצעדים.","אילו שלושה צעדים ברורים מובילים למטרה?"]
+    }},
+  { id:'communication', title:"ביטוי ותקשורת", blurb:"לדבר, להרצות, להישמע, ביישנות",
+    keywords:["לדבר","להביע","תקשורת","הרצאה","שיחה","קול","מבוכה","ביישנות","להרצות","הופעה"],
+    path:['root','solar','heart','throat','left-brain'],
+    lens:{
+      'root':["קול יציב מגיע מגוף מעוגן.","איך הגוף יכול להרגיש יציב לפני שמדברים?"],
+      'solar':["ביטחון לדבר מגיע מהרצון ומהעוצמה האישית.","מה המסר שאפשר לעמוד מאחוריו בבטחה?"],
+      'heart':["דיבור מהלב יוצר חיבור עם המאזינים.","מה הכוונה האמיתית שמאחורי המילים?"],
+      'throat':["זה מרכז הביטוי וגם ההקשבה, שני צדדים של תקשורת.","מה רוצה להיאמר, ומה חשוב להקשיב לו?"],
+      'left-brain':["ניסוח ברור וסדר בדברים מסייעים להעביר את המסר.","איזה ניסוח פשוט ומדויק מעביר את המסר?"]
+    }},
+  { id:'abundance', title:"פרנסה ושפע", blurb:"כסף, קריירה, עסק, ערך ותמורה",
+    keywords:["כסף","פרנסה","שפע","עבודה","קריירה","עסק","הכנסה","שכר","לקוחות"],
+    path:['root','sacral','solar','heart','crown'],
+    lens:{
+      'root':["הבסיס החומרי קשור לתחושת ביטחון. עיגון בשורש מרגיע חרדה כלכלית.","איזו תחושת ביטחון אפשר לבנות צעד אחר צעד?"],
+      'sacral':["שפע נוצר מיצירה והנאה, לא רק ממאמץ.","מה יוצר ערך מתוך הנאה ויצירתיות?"],
+      'solar':["ערך עצמי ופעולה נחושה מאפשרים לבקש תמורה הולמת.","איזה ערך מגיע מהעבודה הזו, ובאיזה ביטחון אפשר לבקש עליו תמורה?"],
+      'heart':["הכרת תודה מזיזה את המבט מחוסר אל שפע קיים.","איזה שפע כבר קיים בחיים, ועל מה אפשר להודות?"],
+      'crown':["פתיחות לקבל דורשת שחרור שליטה ואמון.","מה אפשר לשחרר מהשליטה כדי לאפשר לשפע להגיע?"]
+    }},
+  { id:'emotions', title:"עיבוד רגש קשה", blurb:"עצב, כעס, אבל, כאב, בושה",
+    keywords:["עצב","כעס","אבל","כאב","רגש","אשמה","בושה","מתאבל","מתוסכל","תסכול"],
+    path:['root','sacral','heart-plexus','heart','throat'],
+    lens:{
+      'root':["קודם כל ביטחון: עיגון לפני שנוגעים ברגש. אפשר לעצור בכל רגע ולחזור לנשימה.","מה עוזר להרגיש יציבים ובטוחים לפני שמתקרבים לרגש?"],
+      'sacral':["זה מרכז הרגש והזרימה. תשומת לב רכה לכאן מאפשרת לרגש לנוע.","איפה הרגש נמצא בגוף, ואיזו תנועה רכה הוא מבקש?"],
+      'heart-plexus':["גיבוי רגשי יציב מאפשר לגעת ברגש בלי להישטף.","מה יכול לגבות אותנו כשנוגעים בזה: מילה, אדם, נשימה?"],
+      'heart':["חמלה היא התנאי לעיבוד. היא מרככת את מה שכואב.","איזו מילה רכה אפשר להגיד לחלק שכואב?"],
+      'throat':["הבעה, בדיבור או בכתיבה, מוציאה את הרגש מבפנים.","מה רוצה להיאמר או להיכתב, גם אם לא לאף אחד?"]
+    }},
+  { id:'purpose', title:"משמעות וכיוון", blurb:"ייעוד, חיפוש דרך, מה באמת חשוב",
+    keywords:["משמעות","ייעוד","כיוון","תכלית","חיפוש","דרך","מה הלאה","שליחות"],
+    path:['sacral','solar','heart','third-eye','pineal','crown'],
+    lens:{
+      'sacral':["חיוּת ושמחה הן מצפן. מה שמעורר חיים מראה לאן ללכת.","מה מעורר חיוּת ושמחה אמיתית?"],
+      'solar':["הרצון העמוק הוא מנוע הדרך.","מה הרצון הפעיל שמבקש לבוא לידי ביטוי?"],
+      'heart':["משאלת לב מצביעה על כיוון שמעבר להיגיון.","מה הלב משתוקק אליו?"],
+      'third-eye':["חזון מבהיר כיוון ומאפשר לראות את הדרך.","איזה כיוון מצטייר בבהירות?"],
+      'pineal':["פרספקטיבה גבוהה מפרידה בין העיקר לטפל.","מה חשוב באמת כשמסתכלים על הסיפור מלמעלה?"],
+      'crown':["חיבור למשהו גדול מהאישי נותן משמעות.","במה אנחנו חלק, ומה מבקש לעבור דרכנו?"]
+    }},
+  { id:'manifest', title:"יצירת מציאות רצויה", blurb:"חלום, חזון, הגשמה, חוק המשיכה",
+    keywords:["חלום","חזון","להגשים","הגשמה","מימוש","חוק המשיכה","למשוך","להגשים"],
+    path:['solar','heart-plexus','right-brain','third-eye','heart','crown'],
+    lens:{
+      'solar':["רצון פעיל הוא נקודת ההתחלה של יצירת מציאות.","מה רוצים ליצור בתקופה הקרובה?"],
+      'heart-plexus':["אש ומים: הרצון נפגש עם הרגש וכך מקבל חיים ותוקף.","איזו תחושה לבבית מגבה את הרצון הזה?"],
+      'right-brain':["הדמיה חיה בונה את המציאות הפנימית לפני שהיא מתממשת.","איך נראית, נשמעת ומרגישה המציאות הזו כשהיא קיימת?"],
+      'third-eye':["חזון בהיר ואינטואיציה מכוונים לצעד הנכון.","מה הצעד האינטואיטיבי הבא?"],
+      'heart':["תחושת ראויות פותחת את הלב לקבל.","איפה אפשר להרגיש ראויים לקבל את מה שרוצים?"],
+      'crown':["שחרור ואמון נותנים למציאות מקום להגיב.","מה אפשר לשחרר כדי לתת למציאות להגיב?"]
+    }}
+];
+const topicById = {}; TOPICS.forEach(t=>topicById[t.id]=t);
+
+function matchTopic(text){
+  const s = (text||'').trim();
+  if(!s) return null;
+  let best=null, bestScore=0;
+  TOPICS.forEach(t=>{
+    let score = 0;
+    t.keywords.forEach(k=>{ if(s.indexOf(k)>-1) score += k.length>3 ? 2 : 1; });
+    if(s===t.title) score += 10;
+    if(score>bestScore){ bestScore=score; best=t; }
+  });
+  return best;
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  journey: [],           // ordered list of {chakraId, qId, qName, sentence}
+  selectedKeys: new Set(), // `${chakraId}:${qId}`
+  topic: null,           // {title, tpl, path} — הנושא שהמשתמש חוקר
+  topicAsked: false,     // האם כבר הוצג מסך הנושא
+  order: 'topic'         // סדר התחנות במסע: topic | up | down | pick
+};
+const guide = { active:false, idx:0, path:[] };
+let pickSeq = 0;
+
+function keyOf(cId,qId){ return cId+':'+qId; }
+
+/* ---------- topic helpers ---------- */
+function topicQuote(){ return '״'+state.topic.title+'״'; }
+function isRecommended(id){ return !!(state.topic && state.topic.path.indexOf(id)>-1); }
+function recIndex(id){ return state.topic ? state.topic.path.indexOf(id) : -1; }
+function lensFor(id){
+  const t = state.topic; if(!t) return null;
+  const ch = chakraById[id];
+  if(t.tpl && t.tpl.lens[id]){
+    return {why:t.tpl.lens[id][0], q:t.tpl.lens[id][1], rec:true};
+  }
+  return {
+    why:'המרכז הזה '+ch.gs+'.',
+    q: ch.gq.replace(/\{t\}/g, topicQuote()),
+    rec: isRecommended(id)
+  };
+}
+function setTopic(title, tpl){
+  const clean = (title||'').trim();
+  if(!clean){ state.topic = null; }
+  else {
+    state.topic = { title: clean, tpl: tpl||null, path: (tpl? tpl.path.slice() : GENERIC_PATH.slice()) };
+  }
+  guide.active = false; guide.idx = 0;
+  state.order = state.topic ? 'topic' : 'up';
+  refreshTopicUI();
+}
+
+function toggleQuality(chakra, q){
+  const k = keyOf(chakra.id, q.id);
+  if(state.selectedKeys.has(k)){
+    state.selectedKeys.delete(k);
+    const idx = state.journey.findIndex(e=>e.chakraId===chakra.id && e.qId===q.id);
+    if(idx>-1) state.journey.splice(idx,1);
+  } else {
+    state.selectedKeys.add(k);
+    state.journey.push({chakraId:chakra.id, qId:q.id, qName:q.name, qDesc:q.desc, sentence:'', seq:++pickSeq});
+  }
+  renderDock();
+  renderLegend();
+  return state.selectedKeys.has(k);
+}
+
+/* ============================================================
+   DOM HELPERS
+   ============================================================ */
+function el(tag, cls, html){
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(html!=null) e.innerHTML = html;
+  return e;
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+/* ============================================================
+   THREE.JS SCENE
+   ============================================================ */
+let scene, camera, renderer, rig;
+let chakraMeshes = [];
+let raycaster, pointer;
+let orbitTheta = Math.PI/2 + 0.5, orbitPhi = 1.55, orbitRadius = 7.8;
+let targetY = 0.8;
+let camTargetY = 0.8;
+let dragging = false, lastX=0, lastY=0, moved=0, downTime=0;
+let velTheta=0, velPhi=0;
+let hoveredMesh = null;
+let focusedChakraId = null;
+let clock;
+
+function glowTexture(color, size){
+  size = size || 128;
+  const c = document.createElement('canvas'); c.width=c.height=size;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+  g.addColorStop(0, color || 'rgba(255,255,255,1)');
+  g.addColorStop(0.35, (color||'rgba(255,255,255,.8)'));
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,size,size);
+  return new THREE.CanvasTexture(c);
+}
+
+function chakraPos(ch, zDefault){
+  return new THREE.Vector3(ch.x||0, ch.y, (ch.z!=null? ch.z : zDefault));
+}
+
+function bodyHalfWidth(y){
+  const pts = [
+    [-5.0,1.32],[-4.6,1.02],[-4.2,0.80],[-3.7,0.64],[-3.2,0.55],
+    [-2.6,0.47],[-2.0,0.43],[-1.3,0.42],[-0.6,0.47],[0.0,0.58],
+    [0.6,0.70],[1.2,0.82],[1.7,0.90],[2.0,0.86],[2.15,0.55],
+    [2.3,0.24],[2.5,0.19]
+  ];
+  if(y<=pts[0][0]) return pts[0][1];
+  if(y>=pts[pts.length-1][0]) return pts[pts.length-1][1];
+  for(let i=0;i<pts.length-1;i++){
+    const [y0,w0]=pts[i], [y1,w1]=pts[i+1];
+    if(y>=y0 && y<=y1){
+      const t=(y-y0)/(y1-y0);
+      return w0+(w1-w0)*t;
+    }
+  }
+  return 0.4;
+}
+
+function buildBody(){
+  rig = new THREE.Group();
+  scene.add(rig);
+
+  const lineMat = new THREE.LineBasicMaterial({color:0x8f89b8, transparent:true, opacity:0.35});
+  const ringMat = new THREE.LineBasicMaterial({color:0x8f89b8, transparent:true, opacity:0.2});
+  const dustTex = glowTexture('rgba(230,225,250,1)');
+  const dustMat = new THREE.PointsMaterial({size:0.055, map:dustTex, transparent:true, opacity:0.55, depthWrite:false, blending:THREE.AdditiveBlending, color:0xd8d3f0});
+
+  const depthRatio = 0.62; // front-to-back thickness relative to width, gives the torso real volume
+
+  // torso + neck: left/right equator meridians, plus front/back meridians
+  const steps = 130;
+  const rightPts = [], leftPts = [], frontPts = [], backPts = [];
+  for(let i=0;i<=steps;i++){
+    const y = -5.0 + (7.5)*(i/steps);
+    const hw = bodyHalfWidth(y);
+    rightPts.push(new THREE.Vector3(hw, y, 0));
+    leftPts.push(new THREE.Vector3(-hw, y, 0));
+    frontPts.push(new THREE.Vector3(0, y, hw*depthRatio));
+    backPts.push(new THREE.Vector3(0, y, -hw*depthRatio*0.85));
+  }
+  const hemPts = [rightPts[0].clone(), leftPts[0].clone()];
+
+  const dustPositions = [];
+  function addDust(vArr, jitterX, jitterZ){
+    vArr.forEach(v=>{
+      dustPositions.push(
+        v.x + (Math.random()-0.5)*jitterX,
+        v.y + (Math.random()-0.5)*0.05,
+        v.z + (Math.random()-0.5)*jitterZ
+      );
+    });
+  }
+  addDust(rightPts, 0.09, 0.16);
+  addDust(leftPts, 0.09, 0.16);
+  addDust(frontPts, 0.16, 0.09);
+
+  [rightPts, leftPts, frontPts, backPts, hemPts].forEach(ptArr=>{
+    const geo = new THREE.BufferGeometry().setFromPoints(ptArr);
+    rig.add(new THREE.Line(geo, lineMat));
+  });
+
+  // horizontal cross-section rings at a few key heights — this is what makes rotation legible
+  const ringLevels = [-4.8, -3.0, -1.9, -0.9, 0.0, 0.85, 1.8];
+  ringLevels.forEach(y=>{
+    const hw = bodyHalfWidth(y);
+    const hwz = hw*depthRatio;
+    const pts = [];
+    const segs = 28;
+    for(let i=0;i<=segs;i++){
+      const t = (i/segs)*Math.PI*2;
+      pts.push(new THREE.Vector3(Math.cos(t)*hw, y, Math.sin(t)*hwz*(Math.sin(t)>0?1:0.85)));
+    }
+    rig.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), ringMat));
+  });
+
+  // head — vertical profile ring + horizontal equator ring, for real volume
+  const headCenterY = 3.5, rx=0.58, ry=1.0, rz=0.5;
+  const headPts = [];
+  const headSegs = 64;
+  for(let i=0;i<=headSegs;i++){
+    const t = (i/headSegs)*Math.PI*2;
+    headPts.push(new THREE.Vector3(Math.sin(t)*rx, headCenterY+Math.cos(t)*ry, 0));
+  }
+  rig.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(headPts), lineMat));
+  addDust(headPts, 0.07, 0.16);
+
+  const headEquator = [];
+  for(let i=0;i<=40;i++){
+    const t = (i/40)*Math.PI*2;
+    headEquator.push(new THREE.Vector3(Math.cos(t)*rx, headCenterY, Math.sin(t)*rz));
+  }
+  rig.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(headEquator), ringMat));
+  addDust(headEquator, 0.06, 0.06);
+
+  // arms (bezier)
+  function quadBezier(p0,p1,p2,t){
+    const x = (1-t)*(1-t)*p0[0] + 2*(1-t)*t*p1[0] + t*t*p2[0];
+    const y = (1-t)*(1-t)*p0[1] + 2*(1-t)*t*p1[1] + t*t*p2[1];
+    return [x,y];
+  }
+  [1,-1].forEach(side=>{
+    const p0=[0.90*side,1.7], p1=[1.32*side,0.55], p2=[0.98*side,-1.05];
+    const armPts=[];
+    for(let i=0;i<=40;i++){
+      const t=i/40;
+      const [x,y]=quadBezier(p0,p1,p2,t);
+      armPts.push(new THREE.Vector3(x,y,(Math.sin(t*10)*0.02)));
+    }
+    const armGeo = new THREE.BufferGeometry().setFromPoints(armPts);
+    rig.add(new THREE.Line(armGeo, lineMat));
+    addDust(armPts, 0.06, 0.15);
+  });
+
+  const dustGeo = new THREE.BufferGeometry();
+  dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(dustPositions,3));
+  rig.add(new THREE.Points(dustGeo, dustMat));
+
+  // ambient starfield
+  const starCount = 500;
+  const starPos = [];
+  for(let i=0;i<starCount;i++){
+    const r = 16 + Math.random()*22;
+    const th = Math.random()*Math.PI*2;
+    const ph = Math.acos((Math.random()*2)-1);
+    starPos.push(r*Math.sin(ph)*Math.cos(th), r*Math.cos(ph)*0.6, r*Math.sin(ph)*Math.sin(th));
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos,3));
+  const starMat = new THREE.PointsMaterial({size:0.05, color:0x9a95c0, transparent:true, opacity:0.4, map:dustTex, blending:THREE.AdditiveBlending, depthWrite:false});
+  scene.add(new THREE.Points(starGeo, starMat));
+}
+
+function buildChakraMarkers(){
+  const sphereGeo = new THREE.SphereGeometry(0.11, 20, 20);
+  const hitGeo = new THREE.SphereGeometry(0.34, 10, 10);
+
+  CHAKRAS.forEach(ch=>{
+    const color = new THREE.Color(ch.color);
+    const mat = new THREE.MeshBasicMaterial({color});
+    const mesh = new THREE.Mesh(sphereGeo, mat);
+    mesh.position.copy(chakraPos(ch, 0.16));
+    rig.add(mesh);
+
+    const spriteMat = new THREE.SpriteMaterial({map:glowTexture(ch.color), color, transparent:true, opacity:0.55, blending:THREE.AdditiveBlending, depthWrite:false});
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.scale.set(0.85,0.85,1);
+    sprite.position.copy(chakraPos(ch, 0.14));
+    rig.add(sprite);
+
+    const hitMat = new THREE.MeshBasicMaterial({visible:false});
+    const hit = new THREE.Mesh(hitGeo, hitMat);
+    hit.position.copy(chakraPos(ch, 0.16));
+    hit.userData.chakraId = ch.id;
+    rig.add(hit);
+
+    // טבעת הדגשה לתחנות שמומלצות לנושא (מוצגת רק כשיש נושא)
+    const ringMat = new THREE.SpriteMaterial({map:ringTexture(), color:new THREE.Color('#e8c77a'), transparent:true, opacity:0, blending:THREE.AdditiveBlending, depthWrite:false});
+    const ring = new THREE.Sprite(ringMat);
+    ring.scale.set(0.8,0.8,1);
+    ring.position.copy(chakraPos(ch, 0.15));
+    rig.add(ring);
+
+    chakraMeshes.push({mesh, sprite, ring, hit, chakra:ch, baseScale:1});
+  });
+  buildLegend();
+}
+
+function ringTexture(){
+  const size = 128, c = document.createElement('canvas'); c.width=c.height=size;
+  const ctx = c.getContext('2d');
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+  ctx.beginPath(); ctx.arc(size/2, size/2, size/2-9, 0, Math.PI*2); ctx.stroke();
+  return new THREE.CanvasTexture(c);
+}
+
+/* ============================================================
+   SIDE LEGEND (fixed, decluttered — replaces in-scene floating labels)
+   ============================================================ */
+function buildLegend(){
+  const wrap = document.getElementById('legend');
+  wrap.innerHTML='';
+  const ordered = [...CHAKRAS].sort((a,b)=>b.y-a.y);
+  ordered.forEach(ch=>{
+    const item = el('div','legend-item');
+    item.style.setProperty('--dot', ch.color);
+    item.dataset.chakraId = ch.id;
+    item.innerHTML = '<span class="d"></span><span class="txt">'+ch.name+'</span><span class="num"></span>';
+    item.addEventListener('click', ()=>openChakra(ch.id));
+    wrap.appendChild(item);
+  });
+  renderLegend();
+}
+function renderLegend(){
+  document.querySelectorAll('.legend-item').forEach(item=>{
+    const id = item.dataset.chakraId;
+    const isFocused = id===focusedChakraId;
+    const isPicked = state.journey.some(en=>en.chakraId===id);
+    item.classList.toggle('active', isFocused);
+    item.classList.toggle('picked', isPicked && !isFocused);
+    const ri = recIndex(id);
+    item.classList.toggle('rec', ri>-1);
+    item.classList.toggle('dim', !!state.topic && ri<0);
+    const num = item.querySelector('.num');
+    if(num) num.textContent = ri>-1 ? (ri+1) : '';
+  });
+}
+
+function initThree(){
+  const canvas = document.getElementById('stage');
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 100);
+  renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  clock = new THREE.Clock();
+  raycaster = new THREE.Raycaster();
+  pointer = new THREE.Vector2();
+
+  buildBody();
+  buildChakraMarkers();
+  updateCamera();
+
+  window.addEventListener('resize', onResize);
+  const c = renderer.domElement;
+  c.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  c.addEventListener('wheel', onWheel, {passive:false});
+  c.addEventListener('touchmove', onTouchMove, {passive:false});
+  c.addEventListener('dblclick', ()=>{ targetRadius=7.8; orbitPhi=1.55; targetY=0.8; });
+
+  animate();
+}
+
+function onResize(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function onPointerDown(e){
+  dragging = true; lastX = e.clientX; lastY = e.clientY; moved = 0; downTime = performance.now();
+  velTheta = 0; velPhi = 0;
+}
+function onPointerMove(e){
+  if(!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  moved += Math.abs(dx)+Math.abs(dy);
+  velTheta = dx*0.0032;
+  velPhi = dy*0.0026;
+  orbitTheta -= velTheta;
+  orbitPhi = Math.min(2.0, Math.max(1.15, orbitPhi - velPhi));
+}
+function onPointerUp(e){
+  if(!dragging) return;
+  dragging = false;
+  const dt = performance.now()-downTime;
+  if(moved < 6 && dt < 400){
+    handleTap(e.clientX, e.clientY);
+  }
+}
+function onWheel(e){
+  e.preventDefault();
+  targetRadius = Math.min(11, Math.max(3.6, targetRadius + e.deltaY*0.0035));
+}
+let pinchDist = null;
+function onTouchMove(e){
+  if(e.touches.length===2){
+    e.preventDefault();
+    const dx = e.touches[0].clientX-e.touches[1].clientX;
+    const dy = e.touches[0].clientY-e.touches[1].clientY;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if(pinchDist!=null){
+      const delta = (pinchDist-dist)*0.02;
+      targetRadius = Math.min(11, Math.max(3.6, targetRadius + delta));
+    }
+    pinchDist = dist;
+    dragging = false;
+  } else {
+    pinchDist = null;
+  }
+}
+
+function handleTap(clientX, clientY){
+  pointer.x = (clientX/window.innerWidth)*2-1;
+  pointer.y = -(clientY/window.innerHeight)*2+1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(chakraMeshes.map(m=>m.hit));
+  if(hits.length){
+    const id = hits[0].object.userData.chakraId;
+    openChakra(id);
+  }
+}
+
+// כשכרטיס התחנה פתוח הוא מכסה את תחתית המסך, לכן מסיטים את המבט כך שהנקודה הנבחרת תופיע בחלק העליון הפנוי
+let targetRadius = 7.8, viewShift = 0, targetShift = 0;
+function updateCamera(){
+  camTargetY += (targetY-camTargetY)*0.08;
+  viewShift += (targetShift-viewShift)*0.08;
+  orbitRadius += (targetRadius-orbitRadius)*0.07;
+  const visibleH = 2*orbitRadius*Math.tan((camera.fov*Math.PI/180)/2);
+  const shiftWorld = viewShift*visibleH;
+  const x = orbitRadius*Math.sin(orbitPhi)*Math.cos(orbitTheta);
+  const z = orbitRadius*Math.sin(orbitPhi)*Math.sin(orbitTheta);
+  const y = orbitRadius*Math.cos(orbitPhi) + camTargetY - shiftWorld;
+  camera.position.set(x,y,z);
+  camera.lookAt(0, camTargetY - shiftWorld, 0);
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  if(!dragging){
+    orbitTheta -= velTheta;
+    orbitPhi = Math.min(2.0, Math.max(1.15, orbitPhi - velPhi));
+    velTheta *= 0.92; velPhi *= 0.92;
+    orbitTheta += 0.0016; // gentle ambient drift — keeps the turntable feeling alive
+  }
+  updateCamera();
+
+  chakraMeshes.forEach(m=>{
+    const isFocused = m.chakra.id===focusedChakraId;
+    const isSelected = state.journey.some(en=>en.chakraId===m.chakra.id);
+    const rec = isRecommended(m.chakra.id);
+    const dimmed = !!state.topic && !rec && !isFocused && !isSelected;
+    const pulse = 1 + Math.sin(t*1.6 + m.chakra.y)*0.06;
+    const boost = isFocused? 1.55 : (isSelected? 1.22 : (rec? 1.18 : (dimmed? 0.85 : 1)));
+    m.mesh.scale.setScalar(pulse*boost*0.6+0.4*boost);
+    m.sprite.material.opacity = (dimmed? 0.22 : 0.4) + (isFocused?0.4:0) + (isSelected?0.15:0) + (rec?0.1:0) + Math.sin(t*1.6+m.chakra.y)*0.08;
+    m.sprite.scale.setScalar(0.85*boost);
+    // טבעת מונפשת סביב תחנה מומלצת לנושא
+    const ringOn = rec && !isFocused;
+    const ringTarget = ringOn ? 0.42 + Math.sin(t*2.2 + m.chakra.y)*0.2 : 0;
+    m.ring.material.opacity += (ringTarget - m.ring.material.opacity)*0.12;
+    m.ring.scale.setScalar(0.72 + (ringOn ? (0.5 + Math.sin(t*2.2 + m.chakra.y)*0.08) : 0));
+  });
+
+  renderer.render(scene, camera);
+}
+
+/* ============================================================
+   UI: chakra sheet
+   ============================================================ */
+const sheet = document.getElementById('sheet');
+function openChakra(id){
+  const ch = chakraById[id];
+  focusedChakraId = id;
+  targetY = ch.y;
+  targetShift = 0.3;
+  targetRadius = Math.min(targetRadius, 5.8);
+  document.getElementById('hint').classList.add('hidden');
+
+  // מסע מודרך: אם נפתחה תחנה מחוץ למסלול, היציאה מהמסע המודרך; אחרת מעדכנים את המיקום בו
+  if(guide.active){
+    const gi = guide.path.indexOf(id);
+    if(gi<0) guide.active = false; else guide.idx = gi;
+  }
+
+  document.getElementById('sheetDot').style.background = ch.color;
+  document.getElementById('sheetDot').style.setProperty('--dot-glow', ch.color);
+  document.getElementById('sheetTitle').textContent = ch.name;
+  document.getElementById('sheetSanskrit').textContent = ch.sanskrit;
+  document.getElementById('sheetLoc').textContent = ch.location;
+  document.getElementById('sheetDesc').textContent = ch.role;
+  document.getElementById('sheetBal').innerHTML = '<b>כשהמרכז פעיל:</b> '+ch.balanced;
+  document.getElementById('sheetBonusFlag').innerHTML = ch.bonus? '<span class="bonus-flag">תחנת בונוס</span>' : '';
+
+  // בלוק "בנושא שלך"
+  const tb = document.getElementById('sheetTopicBlock');
+  const lens = lensFor(id);
+  if(lens){
+    tb.hidden = false;
+    tb.style.setProperty('--topic-color', ch.color);
+    document.getElementById('sheetTopicLabel').textContent = lens.rec
+      ? 'בנושא שלך · '+state.topic.title
+      : 'בנושא שלך · '+state.topic.title+' (תחנה כללית)';
+    document.getElementById('sheetWhy').textContent = lens.why;
+    document.getElementById('sheetQ').textContent = lens.q;
+  } else {
+    tb.hidden = true;
+  }
+
+  // תרגול תשומת לב
+  const pr = document.getElementById('sheetPractice');
+  document.getElementById('sheetPracticeBody').innerHTML =
+    '<ol><li>'+ch.attention+'</li>'+
+    '<li>קחו שלוש נשימות איטיות, וכל נשיפה ארוכה מהשאיפה.</li>'+
+    '<li>'+(lens? 'שאלו את עצמכם את השאלה המובילה והמתינו, בלי למהר לענות.' : 'שימו לב מה עולה בכם, בלי לשפוט.')+'</li>'+
+    '<li>סמנו למטה את האיכויות שמדברות אליכם עכשיו.</li></ol>';
+  pr.open = guide.active;
+
+  renderGuideNav();
+
+  const grid = document.getElementById('sheetQuals');
+  grid.innerHTML='';
+  ch.qualities.forEach(q=>{
+    const btn = el('button','qchip');
+    btn.style.setProperty('--chip-color', ch.color);
+    const k = keyOf(ch.id,q.id);
+    if(state.selectedKeys.has(k)) btn.classList.add('selected');
+    btn.innerHTML = '<span class="qname">'+q.name+'</span><span class="qdesc">'+q.desc+'</span>';
+    btn.addEventListener('click', ()=>{
+      const nowSelected = toggleQuality(ch, q);
+      btn.classList.toggle('selected', nowSelected);
+    });
+    grid.appendChild(btn);
+  });
+
+  sheet.classList.add('open');
+  sheet.scrollTop = 0;
+  renderLegend();
+  refreshTopicUI();
+}
+document.getElementById('sheetClose').addEventListener('click', closeChakra);
+function closeChakra(){
+  sheet.classList.remove('open');
+  focusedChakraId = null;
+  guide.active = false;
+  targetShift = 0;
+  renderLegend();
+  refreshTopicUI();
+}
+
+/* ============================================================
+   GUIDED JOURNEY — מסע מודרך בין התחנות המומלצות לנושא
+   ============================================================ */
+function startGuide(){
+  if(!state.topic) return;
+  guide.path = state.topic.path.slice();
+  if(guide.idx<0 || guide.idx>=guide.path.length) guide.idx = 0;
+  guide.active = true;
+  openChakra(guide.path[guide.idx]);
+}
+function guideStep(d){
+  const n = guide.idx + d;
+  if(n<0) return;
+  if(n>=guide.path.length){ goReflect(); return; }
+  guide.idx = n;
+  guide.active = true;
+  openChakra(guide.path[n]);
+}
+function exitGuide(){
+  closeChakra();
+}
+function renderGuideNav(){
+  const nav = document.getElementById('guideNav');
+  if(!guide.active){ nav.classList.remove('on'); nav.innerHTML=''; return; }
+  const n = guide.path.length;
+  const last = guide.idx === n-1;
+  let dots = '';
+  for(let i=0;i<n;i++){
+    dots += '<span class="gn-dot'+(i<guide.idx?' done':'')+(i===guide.idx?' now':'')+'"></span>';
+  }
+  nav.innerHTML =
+    '<div class="gn-progress">'+dots+'</div>'+
+    '<div class="gn-row">'+
+      '<span class="gn-count">תחנה '+(guide.idx+1)+' מתוך '+n+'</span>'+
+      '<button class="gn-exit" type="button" id="gnExit">יציאה מהמסע</button>'+
+      (guide.idx>0? '<button class="btn-ghost" type="button" id="gnPrev">הקודמת</button>' : '')+
+      '<button class="btn-small" type="button" id="gnNext">'+(last? 'סיום וכתיבה' : 'התחנה הבאה')+'</button>'+
+    '</div>';
+  nav.classList.add('on');
+  document.getElementById('gnNext').addEventListener('click', ()=>guideStep(1));
+  const p = document.getElementById('gnPrev'); if(p) p.addEventListener('click', ()=>guideStep(-1));
+  document.getElementById('gnExit').addEventListener('click', exitGuide);
+}
+
+/* ============================================================
+   UI: journey dock
+   ============================================================ */
+const dockTab = document.getElementById('dockTab');
+const dockStrip = document.getElementById('dockStrip');
+let dockOpen = false;
+dockTab.addEventListener('click', ()=>{
+  dockOpen = !dockOpen;
+  dockStrip.classList.toggle('open', dockOpen);
+});
+
+function renderDock(){
+  document.getElementById('dockCount').textContent = state.journey.length;
+  const row = document.getElementById('dockRow');
+  row.innerHTML='';
+  state.journey.forEach(entry=>{
+    const ch = chakraById[entry.chakraId];
+    const chip = el('span','dock-chip');
+    chip.innerHTML = '<span class="d" style="background:'+ch.color+'"></span><span>'+entry.qName+'</span>';
+    const rm = el('button','','×');
+    rm.setAttribute('aria-label','הסרה');
+    rm.addEventListener('click', ()=>{
+      const q = ch.qualities.find(qq=>qq.id===entry.qId);
+      toggleQuality(ch, q);
+      if(focusedChakraId===ch.id) openChakra(ch.id);
+    });
+    chip.appendChild(rm);
+    row.appendChild(chip);
+  });
+  const btn = document.getElementById('finishBtn');
+  btn.disabled = state.journey.length===0;
+  btn.style.opacity = state.journey.length? '1':'0.4';
+  btn.style.pointerEvents = state.journey.length? 'auto':'none';
+}
+renderDock();
+
+/* ============================================================
+   NAVIGATION between screens
+   ============================================================ */
+const reflectScreen = document.getElementById('reflectScreen');
+const journeyScreen = document.getElementById('journeyScreen');
+
+function goReflect(){
+  if(!state.journey.length){
+    toast('סמנו לפחות איכות אחת כדי להמשיך לכתיבה');
+    return;
+  }
+  closeChakra();
+  dockOpen=false; dockStrip.classList.remove('open');
+  sortJourney();
+  renderReflect();
+  reflectScreen.classList.add('open');
+}
+document.getElementById('finishBtn').addEventListener('click', goReflect);
+document.getElementById('reflectBack').addEventListener('click', ()=>{
+  reflectScreen.classList.remove('open');
+});
+
+/* סדר התחנות במסע: לפי מסלול הנושא / מלמטה למעלה / מלמעלה למטה / לפי סדר הבחירה */
+function sortJourney(){
+  const mode = state.order;
+  if(mode==='pick'){ state.journey.sort((a,b)=>a.seq-b.seq); return; }
+  const rank = id=>{
+    const ch = chakraById[id];
+    if(mode==='up') return ch.y;
+    if(mode==='down') return -ch.y;
+    const ri = recIndex(id);              // topic
+    return ri>-1 ? ri : 100 + ch.y;
+  };
+  // Array.sort יציב, כך שאיכויות של אותה תחנה נשארות בסדר הבחירה
+  state.journey.sort((a,b)=>rank(a.chakraId)-rank(b.chakraId));
+}
+
+function renderReflect(){
+  const list = document.getElementById('reflectList');
+  list.innerHTML='';
+
+  if(state.topic){
+    const th = el('div','reflect-topic');
+    th.innerHTML = 'הנושא שלך<b>'+escapeHtml(state.topic.title)+'</b>';
+    list.appendChild(th);
+  }
+
+  // בחירת סדר
+  const row = el('div','order-row');
+  row.innerHTML = '<span>סדר המסע</span>';
+  const sel = el('select');
+  const opts = [];
+  if(state.topic) opts.push(['topic','לפי המסלול שהותאם לנושא']);
+  opts.push(['up','מלמטה למעלה: מהקרקע אל האור']);
+  opts.push(['down','מלמעלה למטה: מההשראה אל הגוף']);
+  opts.push(['pick','לפי סדר הבחירה שלי']);
+  if(!opts.some(o=>o[0]===state.order)) state.order = opts[0][0];
+  opts.forEach(o=>{
+    const op = el('option'); op.value=o[0]; op.textContent=o[1];
+    if(o[0]===state.order) op.selected = true;
+    sel.appendChild(op);
+  });
+  sel.addEventListener('change', ()=>{ state.order = sel.value; sortJourney(); renderReflect(); });
+  row.appendChild(sel);
+  list.appendChild(row);
+
+  const seen = {};
+  state.journey.forEach((entry,i)=>{
+    const ch = chakraById[entry.chakraId];
+    const card = el('div','reflect-card');
+    card.innerHTML =
+      '<div class="reflect-head"><span class="reflect-dot" style="background:'+ch.color+'"></span>'+
+      '<span class="reflect-chakra">'+ch.name+' · '+ch.sanskrit+'</span></div>'+
+      '<div class="reflect-quality">'+entry.qName+'</div>';
+    const lens = lensFor(entry.chakraId);
+    if(lens && !seen[entry.chakraId]){
+      card.appendChild(el('div','reflect-lens', escapeHtml(lens.q)));
+    }
+    seen[entry.chakraId] = true;
+    const ta = el('textarea','reflect-input');
+    ta.placeholder = state.topic
+      ? 'איך האיכות הזו תומכת בי בנושא '+topicQuote()+'?'
+      : 'למה זה מועיל לי עכשיו...';
+    ta.value = entry.sentence || '';
+    ta.addEventListener('input', ()=>{ state.journey[i].sentence = ta.value; });
+    card.appendChild(ta);
+    list.appendChild(card);
+  });
+}
+
+document.getElementById('createJourneyBtn').addEventListener('click', ()=>{
+  reflectScreen.classList.remove('open');
+  buildJourneyCard();
+  journeyScreen.classList.add('open');
+  startJourneyScene();
+});
+document.getElementById('journeyBack').addEventListener('click', ()=>{
+  journeyScreen.classList.remove('open');
+  stopJourneyScene();
+});
+
+/* ============================================================
+   JOURNEY CARD (exportable)
+   ============================================================ */
+function buildJourneyCard(){
+  const card = document.getElementById('journeyCard');
+  card.innerHTML='';
+  card.appendChild(el('div','jc-eyebrow','נתיב האור'));
+  card.appendChild(el('div','jc-title','המסע האנרגטי שלי'));
+  const dateStr = new Date().toLocaleDateString('he-IL', {year:'numeric', month:'long', day:'numeric'});
+  card.appendChild(el('div','jc-date',dateStr));
+  if(state.topic){
+    card.appendChild(el('div','jc-topic','מסע לנושא<b>'+escapeHtml(state.topic.title)+'</b>'));
+  }
+
+  const seen = {};
+  state.journey.forEach(entry=>{
+    const ch = chakraById[entry.chakraId];
+    const item = el('div','jc-item');
+    const marker = el('div','jc-marker');
+    marker.innerHTML = '<span class="dot" style="background:'+ch.color+'"></span>';
+    const body = el('div','jc-item-body');
+    const lens = lensFor(entry.chakraId);
+    const lensHtml = (lens && !seen[entry.chakraId])
+      ? '<div class="jc-lens">'+escapeHtml(lens.q)+'</div>' : '';
+    seen[entry.chakraId] = true;
+    body.innerHTML =
+      '<div class="jc-chakraname">'+ch.name+' · '+ch.sanskrit+'</div>'+
+      '<div class="jc-quality">'+entry.qName+'</div>'+
+      lensHtml+
+      '<div class="jc-sentence'+(entry.sentence?'':' empty')+'">'+
+        (entry.sentence? escapeHtml(entry.sentence) : 'לא נכתב משפט לתחנה הזו')+
+      '</div>';
+    item.appendChild(marker); item.appendChild(body);
+    card.appendChild(item);
+  });
+
+  const pr = el('div','jc-practice');
+  pr.innerHTML =
+    '<div class="jc-practice-title">איך לתרגל את המסע</div>'+
+    '<ol>'+PRACTICE_STEPS.map(s=>'<li>'+s+'</li>').join('')+'</ol>';
+  card.appendChild(pr);
+}
+const PRACTICE_STEPS = [
+  'שבו בנוחות וקחו שלוש נשימות עמוקות.',
+  'עברו על התחנות לפי הסדר. בכל תחנה הפנו תשומת לב לאזור בגוף, נשמו נשימה או שתיים וקראו לעצמכם את המשפט שכתבתם.',
+  'סיימו בעיגון: יד על הבטן, שלוש נשימות, והחזרה של תשומת הלב אל החדר.'
+];
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/* ============================================================
+   JOURNEY 3D SCENE (small, connecting thread)
+   ============================================================ */
+let jScene, jCam, jRenderer, jClock, jAnim=null, jOrb;
+function startJourneyScene(){
+  const canvas = document.getElementById('journeyStage');
+  const wrap = canvas.parentElement;
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+
+  jScene = new THREE.Scene();
+  jCam = new THREE.PerspectiveCamera(40, w/h, 0.1, 100);
+  jCam.position.set(0,0.4,7.5);
+  jCam.lookAt(0,0.4,0);
+  jRenderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  jRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  jRenderer.setSize(w,h);
+  jClock = new THREE.Clock();
+
+  // faint body echo (reuse contour builder at smaller opacity)
+  const group = new THREE.Group();
+  jScene.add(group);
+  const dustTex = glowTexture('rgba(230,225,250,1)');
+  const lineMat = new THREE.LineBasicMaterial({color:0x6c67a0, transparent:true, opacity:0.28});
+  const steps=90, rightPts=[], leftPts=[];
+  for(let i=0;i<=steps;i++){
+    const y=-5+(7.5)*(i/steps);
+    const hw=bodyHalfWidth(y);
+    rightPts.push(new THREE.Vector3(hw,y,0));
+    leftPts.push(new THREE.Vector3(-hw,y,0));
+  }
+  [rightPts,leftPts].forEach(p=>{
+    group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(p), lineMat));
+  });
+  const headPts=[];
+  for(let i=0;i<=48;i++){
+    const t=(i/48)*Math.PI*2;
+    headPts.push(new THREE.Vector3(Math.sin(t)*0.58, 3.5+Math.cos(t)*1.0, 0));
+  }
+  group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(headPts), lineMat));
+
+  // unique chakra sequence in chosen order
+  const seq = [];
+  state.journey.forEach(en=>{ if(!seq.includes(en.chakraId)) seq.push(en.chakraId); });
+  const points = seq.map(id=>{
+    const ch = chakraById[id];
+    const mat = new THREE.MeshBasicMaterial({color:new THREE.Color(ch.color)});
+    const sph = new THREE.Mesh(new THREE.SphereGeometry(0.13,16,16), mat);
+    sph.position.copy(chakraPos(ch, 0.18));
+    group.add(sph);
+    const spriteMat = new THREE.SpriteMaterial({map:glowTexture(ch.color), transparent:true, opacity:0.6, blending:THREE.AdditiveBlending, depthWrite:false});
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.scale.set(0.7,0.7,1);
+    sprite.position.copy(sph.position);
+    group.add(sprite);
+    return chakraPos(ch, 0.18);
+  });
+
+  let curve=null;
+  if(points.length>1){
+    curve = new THREE.CatmullRomCurve3(points);
+    const tubeGeo = new THREE.TubeGeometry(curve, Math.max(64,points.length*24), 0.018, 8, false);
+    const tubeMat = new THREE.MeshBasicMaterial({color:0xe8c77a, transparent:true, opacity:0.55});
+    group.add(new THREE.Mesh(tubeGeo, tubeMat));
+
+    const orbMat = new THREE.SpriteMaterial({map:glowTexture('#e8c77a'), transparent:true, blending:THREE.AdditiveBlending, depthWrite:false});
+    jOrb = new THREE.Sprite(orbMat);
+    jOrb.scale.set(0.5,0.5,1);
+    group.add(jOrb);
+  } else if(points.length===1){
+    jOrb=null;
+  }
+
+  const journeyGroupRef = group;
+  const duration = Math.max(6, points.length*2.2);
+
+  function loop(){
+    jAnim = requestAnimationFrame(loop);
+    const t = jClock.getElapsedTime();
+    journeyGroupRef.rotation.y = t*0.12;
+    if(curve && jOrb){
+      const tt = (t % duration)/duration;
+      const p = curve.getPointAt(tt);
+      jOrb.position.copy(p);
+    }
+    jRenderer.render(jScene, jCam);
+  }
+  loop();
+}
+function stopJourneyScene(){
+  if(jAnim) cancelAnimationFrame(jAnim);
+  jAnim=null;
+}
+
+/* ============================================================
+   EXPORT / SHARE
+   ============================================================ */
+function buildSummaryText(){
+  let s = 'נתיב האור — המסע האנרגטי שלי\n';
+  s += new Date().toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'})+'\n';
+  if(state.topic) s += 'נושא המסע: '+state.topic.title+'\n';
+  s += '\n';
+  const seen = {};
+  state.journey.forEach((entry,i)=>{
+    const ch = chakraById[entry.chakraId];
+    s += (i+1)+'. '+ch.name+' ('+ch.sanskrit+') — '+entry.qName+'\n';
+    const lens = lensFor(entry.chakraId);
+    if(lens && !seen[entry.chakraId]) s += '   שאלה מובילה: '+lens.q+'\n';
+    seen[entry.chakraId] = true;
+    s += '   '+(entry.sentence? entry.sentence : '(לא נכתב משפט)')+'\n\n';
+  });
+  s += 'איך לתרגל את המסע:\n';
+  PRACTICE_STEPS.forEach((p,i)=>{ s += (i+1)+'. '+p+'\n'; });
+  return s;
+}
+
+document.getElementById('downloadTxtBtn').addEventListener('click', ()=>{
+  const blob = new Blob([buildSummaryText()], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'המסע-האנרגטי-שלי.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('הקובץ ירד בהצלחה');
+});
+
+document.getElementById('downloadImgBtn').addEventListener('click', async ()=>{
+  try{
+    const card = document.getElementById('journeyCard');
+    const canvas = await html2canvas(card, {backgroundColor:'#0c0d1a', scale:2});
+    const link = document.createElement('a');
+    link.download = 'המסע-האנרגטי-שלי.png';
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link); link.click(); link.remove();
+    toast('התמונה ירדה בהצלחה');
+  }catch(err){
+    toast('לא הצלחתי ליצור תמונה, נסו שוב');
+  }
+});
+
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  const text = buildSummaryText();
+  if(navigator.share){
+    try{ await navigator.share({title:'המסע האנרגטי שלי', text}); }
+    catch(e){ /* cancelled */ }
+  } else {
+    try{
+      await navigator.clipboard.writeText(text);
+      toast('הטקסט הועתק ללוח');
+    }catch(e){
+      toast('שיתוף לא נתמך בדפדפן הזה');
+    }
+  }
+});
+
+document.getElementById('mailBtn').addEventListener('click', ()=>{
+  const subject = encodeURIComponent('המסע האנרגטי שלי — נתיב האור');
+  const body = encodeURIComponent(buildSummaryText());
+  window.location.href = 'mailto:?subject='+subject+'&body='+body;
+});
+
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  state.journey = [];
+  state.selectedKeys.clear();
+  renderDock();
+  renderLegend();
+  stopJourneyScene();
+  journeyScreen.classList.remove('open');
+  reflectScreen.classList.remove('open');
+  toast('התחלתם מסע חדש. אפשר לבחור נושא חדש או להמשיך עם הנוכחי');
+  openTopicScreen();
+});
+
+/* ============================================================
+   TOPIC SCREEN + TOPIC UI
+   ============================================================ */
+const topicScreen = document.getElementById('topicScreen');
+const topicInput  = document.getElementById('topicInput');
+const topicMatchEl = document.getElementById('topicMatch');
+const topicChipsEl = document.getElementById('topicChips');
+let chosenTpl = null;
+
+function buildTopicChips(){
+  topicChipsEl.innerHTML = '';
+  TOPICS.forEach(t=>{
+    const b = el('button','tchip', t.title);
+    b.type = 'button';
+    b.title = t.blurb;
+    b.dataset.id = t.id;
+    b.addEventListener('click', ()=>{
+      chosenTpl = t;
+      topicInput.value = t.title;
+      updateTopicMatch();
+    });
+    topicChipsEl.appendChild(b);
+  });
+}
+function updateTopicMatch(){
+  const text = topicInput.value.trim();
+  if(chosenTpl && text !== chosenTpl.title) chosenTpl = null;
+  const tpl = chosenTpl || matchTopic(text);
+  document.querySelectorAll('.tchip').forEach(c=>c.classList.toggle('on', !!tpl && c.dataset.id===tpl.id && (chosenTpl===tpl)));
+  if(!text){ topicMatchEl.textContent = ''; return; }
+  if(tpl){
+    topicMatchEl.textContent = 'המסלול הקרוב ביותר: '+tpl.title+' · '+tpl.path.length+' תחנות מותאמות';
+  } else {
+    topicMatchEl.textContent = 'לא זוהה נושא מוכן. ייבנה מסלול כללי של 7 מרכזים שמתאים לכל נושא.';
+  }
+}
+function openTopicScreen(){
+  state.topicAsked = true;
+  topicInput.value = state.topic ? state.topic.title : '';
+  chosenTpl = (state.topic && state.topic.tpl && state.topic.tpl.title===state.topic.title) ? state.topic.tpl : null;
+  updateTopicMatch();
+  topicScreen.classList.remove('hidden');
+  setTimeout(()=>{ try{ topicInput.focus({preventScroll:true}); }catch(e){} }, 400);
+}
+function closeTopicScreen(){ topicScreen.classList.add('hidden'); }
+
+document.getElementById('topicGo').addEventListener('click', ()=>{
+  const text = topicInput.value.trim();
+  if(!text){ toast('כתבו נושא או בחרו מהרשימה'); return; }
+  const tpl = chosenTpl || matchTopic(text);
+  setTopic(text, tpl);
+  closeTopicScreen();
+  closeChakra();
+  toast('נבנה מסלול של '+state.topic.path.length+' תחנות. אפשר להתחיל מסע מודרך');
+});
+document.getElementById('topicSkip').addEventListener('click', ()=>{
+  closeTopicScreen();
+});
+topicInput.addEventListener('input', updateTopicMatch);
+document.getElementById('topicChip').addEventListener('click', openTopicScreen);
+
+function refreshTopicUI(){
+  const chip = document.getElementById('topicChip');
+  const cta  = document.getElementById('guideCta');
+  if(state.topic){
+    chip.hidden = false;
+    document.getElementById('topicChipText').textContent = state.topic.title;
+    cta.hidden = false;
+    cta.textContent = guide.idx>0
+      ? '▶ להמשיך במסע המודרך (תחנה '+(guide.idx+1)+')'
+      : '▶ מסע מודרך לנושא שלך';
+    cta.classList.toggle('hide', sheet.classList.contains('open'));
+  } else {
+    chip.hidden = true;
+    cta.hidden = true;
+  }
+  renderLegend();
+}
+document.getElementById('guideCta').addEventListener('click', startGuide);
+buildTopicChips();
+
+/* ============================================================
+   INTRO / HELP
+   ============================================================ */
+const intro = document.getElementById('intro');
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  intro.classList.add('hidden');
+  setTimeout(()=>document.getElementById('hint').classList.add('hidden'), 9000);
+  if(!state.topicAsked) setTimeout(openTopicScreen, 350);
+});
+document.getElementById('helpBtn').addEventListener('click', ()=>{
+  intro.classList.remove('hidden');
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+initThree();
+
+})();
+</script>
+</body>
+</html>
